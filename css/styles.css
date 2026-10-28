@@ -440,3 +440,16 @@
         align-items: center;
       }
     }
+
+/* Asset import/export and QR address input */
+.wallet-tools { display: flex; gap: 10px; margin: 0 0 14px; }
+.wallet-tools .btn { margin-top: 0; flex: 1; text-align: center; }
+.import-button { display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.input-with-action { display: flex; gap: 8px; align-items: stretch; }
+.input-with-action input { flex: 1; min-width: 0; }
+.scan-address-btn {
+  flex: 0 0 52px; border: 1px solid var(--border); border-radius: 13px;
+  background: var(--surface2); color: var(--accent); font-size: 25px;
+}
+.scan-address-btn:active { transform: scale(.97); }
+#unsignedMeta { color: #555; overflow-wrap: anywhere; }
