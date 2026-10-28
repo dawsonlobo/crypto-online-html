@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10131a">
+  <title>Vault — Crypto Wallet</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+  <div class="app">
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-icon">◆</span>
+        <span>vault<span style="color:var(--accent)">.</span></span>
+      </div>
+      <button class="icon-btn" onclick="openAddCoin()" aria-label="Add coin">+</button>
+    </header>
+
+    <!-- HOME -->
+    <section id="home" class="page active">
+      <p class="muted">YOUR PORTFOLIO</p>
+      <h1>My Wallet</h1>
+      <p class="muted small">Manage your digital assets</p>
+
+      <div class="total-card">
+        <div class="total-label">Total token balance</div>
+        <div class="total-value" id="totalCoins">3 assets</div>
+        <div class="total-sub">Balances are displayed per token</div>
+      </div>
+
+      <div class="section-title">
+        <h2>Your assets</h2>
+        <span class="muted small" id="assetCount">3 assets</span>
+      </div>
+      <div id="coinList" class="coin-list"></div>
+    </section>
+
+    <!-- COIN DETAILS -->
+    <section id="details" class="page">
+      <button class="back" onclick="goHome()">← Wallet</button>
+      <div id="coinDetails"></div>
+    </section>
+
+    <!-- SEND -->
+    <section id="send" class="page">
+      <button class="back" onclick="showPage('details')">← Back</button>
+      <h1>Send <span id="sendSymbol"></span></h1>
+      <p class="muted">Prepare a transaction for offline signing.</p>
+
+      <div class="field">
+        <label for="recipient">Recipient address</label>
+        <input id="recipient" placeholder="Enter recipient address" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div class="field">
+        <label for="amount">Amount</label>
+        <input id="amount" type="number" min="0" step="any" placeholder="0.00" inputmode="decimal">
+      </div>
+
+      <div class="fee-box">
+        <div class="summary-row">
+          <span>Network</span><span id="sendChain"></span>
+        </div>
+        <div class="summary-row">
+          <span>Estimated fee</span><span id="feeText"></span>
+        </div>
+        <div class="summary-row">
+          <span>Available balance</span><span id="available"></span>
+        </div>
+      </div>
+
+      <p class="muted small">
+        Fees shown here are illustrative estimates, not live network quotes.
+      </p>
+
+      <button class="btn" onclick="generateTransaction()">
+        Generate Transaction
+      </button>
+    </section>
+
+    <!-- UNSIGNED QR -->
+    <section id="unsigned" class="page">
+      <button class="back" onclick="showPage('send')">← Back</button>
+      <h1>Sign transaction</h1>
+      <p class="muted">
+        Scan this QR using your offline signing device. Return the signed
+        transaction as a QR code.
+      </p>
+
+      <div class="qr-card">
+        <h3>Unsigned transaction</h3>
+        <div id="unsignedQR" class="qr-code"></div>
+        <p>Transaction data only — not signed</p>
+      </div>
+
+      <div class="notice">
+        Never enter or scan a seed phrase or private key into this app.
+        Verify transaction details on your signing device.
+      </div>
+
+      <button class="btn" onclick="openScanner()">
+        Scan Signed Transaction
+      </button>
+
+      <button class="btn" onclick="pasteFromClipboard()">
+        Read Clipboard
+      </button>
+      <button class="btn secondary" onclick="showPage('details')">
+        Cancel
+      </button>
+    </section>
+
+    <!-- RECEIVE -->
+    <section id="receive" class="page">
+      <button class="back" onclick="showPage('details')">← Back</button>
+      <h1>Receive <span id="receiveSymbol"></span></h1>
+      <p class="muted">Share your receiving address.</p>
+      <div class="qr-card">
+        <h3>Receiving address</h3>
+        <div id="receiveQR" class="qr-code"></div>
+        <p id="receiveAddress" style="overflow-wrap:anywhere"></p>
+      </div>
+      <button class="btn" onclick="copyAddress()">Copy Address</button>
+    </section>
+
+    <!-- CONFIRMATION -->
+    <section id="confirm" class="page">
+      <button class="back" onclick="showPage('unsigned')">← Back</button>
+      <h1>Review transaction</h1>
+      <p class="muted">Check all details before proceeding.</p>
+      <div id="confirmationSummary" class="summary"></div>
+
+      <div class="notice">
+        Only proceed after verifying the signed transaction independently.
+        This demo does not cryptographically verify the signature.
+      </div>
+
+      <button class="btn" onclick="broadcastTransaction()">Broadcast</button>
+      <button class="btn secondary" onclick="showPage('unsigned')">
+        Cancel
+      </button>
+    </section>
+
+    <!-- RESULT -->
+    <section id="result" class="page center">
+      <div id="resultIcon" class="status-icon">✓</div>
+      <h1 id="resultTitle">Transaction complete</h1>
+      <p id="resultMessage" class="muted"></p>
+      <p class="muted small">Returning to wallet in 5 seconds...</p>
+      <button class="btn secondary" onclick="goHome()">Return Home</button>
+    </section>
+
+  </div>
+
+  <!-- ADD COIN MODAL -->
+  <div id="addModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+    <div class="modal-content">
+      <div class="modal-head">
+        <h2 id="addTitle">Add an asset</h2>
+        <button class="icon-btn" onclick="closeAddCoin()" aria-label="Close">×</button>
+      </div>
+
+      <div class="field">
+        <label for="newCoin">Coin / Token</label>
+        <input id="newCoin" placeholder="e.g. Bitcoin" required>
+      </div>
+
+      <div class="field">
+        <label for="newSymbol">Symbol</label>
+        <input id="newSymbol" placeholder="e.g. BTC" required>
+      </div>
+
+      <div class="field">
+        <label for="newChain">Chain</label>
+        <select id="newChain">
+          <option value="Bitcoin">Bitcoin</option>
+          <option value="Ethereum">Ethereum</option>
+          <option value="Polygon">Polygon</option>
+          <option value="BNB Smart Chain">BNB Smart Chain</option>
+          <option value="Solana">Solana</option>
+          <option value="Arbitrum">Arbitrum</option>
+          <option value="Base">Base</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="newAddress">Wallet address</label>
+        <input id="newAddress" placeholder="Public address only" autocomplete="off" spellcheck="false">
+      </div>
+
+      <button class="btn" onclick="addCoin()">Add Asset</button>
+    </div>
+  </div>
+
+  <!-- SCANNER MODAL -->
+  <div id="scanModal" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-head">
+        <h2>Scan signed QR</h2>
+        <button class="icon-btn" onclick="closeScanner()" aria-label="Close">×</button>
+      </div>
+      <p class="muted small">
+        Scan the signed transaction QR from your offline device.
+      </p>
+      <div id="reader"></div>
+      <p id="scanError" class="small" style="color:var(--danger)"></p>
+    </div>
+  </div>
+  <script src="js/state.js"></script>
+  <script src="js/dom.js"></script>
+  <script src="js/wallet.js"></script>
+  <script src="js/transactions.js"></script>
+  <script src="js/scanner.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>
