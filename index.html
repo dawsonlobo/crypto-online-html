@@ -1,9 +1,64 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#10131a"><title>Vault — Crypto Wallet</title><link rel="stylesheet" href="css/styles.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script src="https://unpkg.com/html5-qrcode"></script><script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
-<style>
-    .address-input-wrap{display:flex;gap:8px;align-items:stretch}.address-input-wrap input{flex:1;min-width:0}.scan-address-btn{width:52px;flex-shrink:0;border:1px solid var(--border);border-radius:13px;background:var(--surface2);color:var(--text);font-size:22px}.wallet-tools{display:flex;gap:10px;margin:-18px 0 18px}.wallet-tools .btn{margin:0;flex:1}.import-label{text-align:center;display:block;cursor:pointer}.coin-balance .balance-native{font-size:11px;color:var(--muted);font-weight:400;margin-top:3px}
-</style></head><body>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10131a">
+  <title>Vault — Crypto Wallet</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
+  <style>
+    .address-input-wrap {
+      display: flex;
+      gap: 8px;
+      align-items: stretch
+    }
+
+    .address-input-wrap input {
+      flex: 1;
+      min-width: 0
+    }
+
+    .scan-address-btn {
+      width: 52px;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 22px
+    }
+
+    .wallet-tools {
+      display: flex;
+      gap: 10px;
+      margin: -18px 0 18px
+    }
+
+    .wallet-tools .btn {
+      margin: 0;
+      flex: 1
+    }
+
+    .import-label {
+      text-align: center;
+      display: block;
+      cursor: pointer
+    }
+
+    .coin-balance .balance-native {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 400;
+      margin-top: 3px
+    }
+  </style>
+</head>
+
+<body>
   <div class="app">
 
     <header class="topbar">
@@ -13,7 +68,9 @@
       </div>
       <button class="icon-btn" onclick="openAddCoin()" aria-label="Add coin">+</button>
     </header>
-    <div class="wallet-tools"><button class="btn secondary" id="exportCoinsBtn" type="button">Export assets</button><label class="btn secondary import-label" for="importCoinsInput">Import assets</label><input id="importCoinsInput" type="file" accept="application/json,.json" class="hidden"></div>
+    <div class="wallet-tools"><button class="btn secondary" id="exportCoinsBtn" type="button">Export
+        assets</button><label class="btn secondary import-label" for="importCoinsInput">Import assets</label><input
+        id="importCoinsInput" type="file" accept="application/json,.json" class="hidden"></div>
 
     <!-- HOME -->
     <section id="home" class="page active">
@@ -48,7 +105,9 @@
 
       <div class="field">
         <label for="recipient">Recipient address</label>
-        <div class="address-input-wrap"><input id="recipient" placeholder="Enter recipient address" autocomplete="off" spellcheck="false"><button type="button" id="scanRecipientBtn" class="scan-address-btn" aria-label="Scan recipient address" title="Scan QR code">▦</button></div>
+        <div class="address-input-wrap"><input id="recipient" placeholder="Enter recipient address" autocomplete="off"
+            spellcheck="false"><button type="button" id="scanRecipientBtn" class="scan-address-btn"
+            aria-label="Scan recipient address" title="Scan QR code">▦</button></div>
       </div>
 
       <div class="field">
@@ -71,6 +130,7 @@
       <p class="muted small">
         Fees shown here are illustrative estimates, not live network quotes.
       </p>
+      <p id="feeHint" class="muted small"></p>
 
       <button class="btn" onclick="generateTransaction()">
         Generate Transaction
@@ -89,6 +149,7 @@
       <div class="qr-card">
         <h3>Unsigned transaction</h3>
         <div id="unsignedQR" class="qr-code"></div>
+        <p id="unsignedMeta" class="muted small"></p>
         <p>Transaction data only — not signed</p>
       </div>
 
@@ -187,7 +248,23 @@
         <input id="newAddress" placeholder="Public address only" autocomplete="off" spellcheck="false">
       </div>
 
-      
+      <div class="field">
+        <label for="newStandard">Token standard</label>
+        <select id="newStandard">
+          <option value="native">Native coin</option>
+          <option value="erc20">ERC-20 token</option>
+        </select>
+      </div>
+
+      <div class="field" id="contractField">
+        <label for="newContract">Token contract address</label>
+        <input id="newContract" placeholder="ERC-20 contract address">
+      </div>
+
+      <div class="field">
+        <label for="newRpc">Custom RPC URL (optional)</label>
+        <input id="newRpc" placeholder="https://...">
+      </div>
 
       <button class="btn" onclick="addCoin()">Add Asset</button>
     </div>
@@ -208,6 +285,14 @@
     </div>
   </div>
 
-  
-<script src="js/state.js"></script><script src="js/dom.js"></script><script src="js/chain-adapters.js"></script><script src="js/wallet.js"></script><script src="js/transactions.js"></script><script src="js/scanner.js"></script><script src="js/app.js"></script>
-</body></html>
+
+  <script src="js/state.js"></script>
+  <script src="js/dom.js"></script>
+  <script src="js/chain-adapters.js"></script>
+  <script src="js/wallet.js"></script>
+  <script src="js/transactions.js"></script>
+  <script src="js/scanner.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>
