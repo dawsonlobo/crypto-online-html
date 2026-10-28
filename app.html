@@ -1,1548 +1,1280 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
-    <title>VaultKey - Interactive Mobile Wallet</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap"
-        rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-    <style>
-        body {
-            font-family: 'Space Grotesk', sans-serif;
-            background-color: #0b0e14;
-            color: #f1f5f9;
-            -webkit-tap-highlight-color: transparent;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10131a">
+  <title>Vault — Crypto Wallet</title>
 
-        .font-mono {
-            font-family: 'JetBrains Mono', monospace;
-        }
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
 
-        .screen {
-            display: none;
-            min-height: 100vh;
-            flex-direction: column;
-            width: 100%;
-            max-width: 430px;
-            margin: 0 auto;
-            background: #10131a;
-            position: relative;
-        }
+  <style>
+    :root {
+      --bg: #10131a;
+      --surface: #191e29;
+      --surface2: #222938;
+      --text: #f5f7fb;
+      --muted: #929caf;
+      --accent: #a5f36b;
+      --border: #303746;
+      --danger: #ff707b;
+    }
 
-        .screen.active {
-            display: flex;
-        }
+    * {
+      box-sizing: border-box;
+    }
 
-        .cyber-glow {
-            box-shadow: 0 0 25px -5px rgba(0, 240, 181, 0.25);
-        }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+    }
 
-        .glow-accent {
-            text-shadow: 0 0 12px rgba(0, 240, 181, 0.4);
-        }
+    button,
+    input,
+    select {
+      font: inherit;
+    }
 
-        @keyframes scan-anim {
-            0% {
-                top: 10%;
-                opacity: 0.8;
-            }
+    button {
+      cursor: pointer;
+    }
 
-            50% {
-                opacity: 1;
-            }
+    .app {
+      width: 100%;
+      max-width: 520px;
+      min-height: 100vh;
+      margin: auto;
+      padding: 24px 18px 40px;
+    }
 
-            100% {
-                top: 90%;
-                opacity: 0.8;
-            }
-        }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
 
-        .scanner-beam {
-            animation: scan-anim 2.2s ease-in-out infinite alternate;
-        }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 22px;
+      font-weight: 800;
+    }
 
-        @keyframes pulse-ring {
-            0% {
-                transform: scale(0.95);
-                opacity: 0.8;
-            }
+    .brand-icon {
+      background: var(--accent);
+      color: #10131a;
+      border-radius: 12px;
+      padding: 9px;
+    }
 
-            50% {
-                transform: scale(1.05);
-                opacity: 0.4;
-            }
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: white;
+      border-radius: 14px;
+      font-size: 25px;
+    }
 
-            100% {
-                transform: scale(0.95);
-                opacity: 0.8;
-            }
-        }
+    h1 {
+      font-size: 27px;
+      margin: 0 0 8px;
+    }
 
-        .pulse-circle {
-            animation: pulse-ring 3s ease-in-out infinite;
-        }
-    </style>
+    h2 {
+      font-size: 21px;
+      margin: 0 0 12px;
+    }
+
+    p {
+      line-height: 1.5;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .small {
+      font-size: 13px;
+    }
+
+    .total-card {
+      margin: 22px 0 28px;
+      padding: 24px;
+      border-radius: 24px;
+      background: linear-gradient(140deg, #293a2c, #1a2828);
+      border: 1px solid #3c5140;
+    }
+
+    .total-label {
+      color: #c0d0c1;
+      font-size: 14px;
+    }
+
+    .total-value {
+      font-size: 34px;
+      font-weight: 800;
+      margin-top: 10px;
+    }
+
+    .total-sub {
+      color: #b2c3b6;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .coin-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .coin {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 17px;
+      border: 1px solid var(--border);
+      border-radius: 19px;
+      background: var(--surface);
+      cursor: pointer;
+    }
+
+    .coin:active {
+      transform: scale(.99);
+    }
+
+    .coin-icon {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      border-radius: 50%;
+      font-weight: 800;
+      font-size: 18px;
+      background: var(--surface2);
+    }
+
+    .coin-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .coin-name {
+      font-weight: 700;
+    }
+
+    .coin-chain {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .coin-balance {
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .coin-symbol {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 15px 18px;
+      border: 0;
+      border-radius: 15px;
+      background: var(--accent);
+      color: #11180f;
+      font-weight: 800;
+      margin-top: 12px;
+    }
+
+    .btn.secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn.danger {
+      background: #43242b;
+      color: #ffb6bc;
+    }
+
+    .btn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-row .btn {
+      flex: 1;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .back {
+      border: 0;
+      background: none;
+      color: var(--accent);
+      font-weight: 700;
+      padding: 0;
+      margin-bottom: 25px;
+    }
+
+    .field {
+      margin: 20px 0;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 9px;
+      color: #c0c7d4;
+      font-size: 14px;
+    }
+
+    .field input,
+    .field select {
+      display: block;
+      width: 100%;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 15px;
+      border-radius: 13px;
+      outline: none;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--accent);
+    }
+
+    .field input::placeholder {
+      color: #737d90;
+    }
+
+    .fee-box,
+    .summary {
+      padding: 18px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 17px;
+      margin: 20px 0;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 15px;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+
+    .summary-row span:first-child {
+      color: var(--muted);
+    }
+
+    .summary-row span:last-child {
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+
+    .qr-card {
+      text-align: center;
+      padding: 25px 15px;
+      background: white;
+      color: #151515;
+      border-radius: 22px;
+      margin: 25px 0;
+    }
+
+    .qr-card h3 {
+      margin: 0 0 15px;
+    }
+
+    .qr-card p {
+      font-size: 12px;
+      color: #555;
+    }
+
+    .qr-code {
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .qr-code img,
+    .qr-code canvas {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .status-icon {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: var(--surface2);
+      display: grid;
+      place-items: center;
+      font-size: 38px;
+      margin: 35px auto 20px;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 19px;
+      height: 19px;
+      border: 3px solid #53604e;
+      border-top-color: #11180f;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      padding: 18px;
+      background: #000a;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-content {
+      width: 100%;
+      max-width: 484px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 25px;
+      padding: 24px 20px;
+      animation: rise .2s ease-out;
+    }
+
+    @keyframes rise {
+      from {
+        transform: translateY(25px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    #reader {
+      width: 100%;
+      margin: 20px auto;
+      overflow: hidden;
+      border-radius: 16px;
+    }
+
+    .notice {
+      background: #292a21;
+      border: 1px solid #514c31;
+      padding: 13px;
+      border-radius: 13px;
+      color: #e4d6a0;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .empty {
+      text-align: center;
+      padding: 30px 10px;
+      color: var(--muted);
+    }
+
+    @media (min-width: 600px) {
+      .app {
+        padding-top: 40px;
+      }
+
+      .modal {
+        align-items: center;
+      }
+    }
+  </style>
 </head>
 
-<body class="bg-black flex justify-center items-start min-h-screen">
-    <div
-        class="w-full max-w-[430px] min-h-screen bg-[#10131a] relative shadow-2xl border-x border-[#1e2330] overflow-hidden flex flex-col">
-        <!-- Top Persistent Air-Gap Hardware Status Header -->
-        <header
-            class="sticky top-0 z-50 bg-[#10131a]/95 backdrop-blur-md px-4 pt-3 pb-2.5 border-b border-[#1f2430] flex items-center justify-between">
-            <div class="flex items-center space-x-2.5">
-                <button
-                    class="w-8 h-8 rounded-lg bg-[#191c24] flex items-center justify-center text-slate-300 hover:text-white transition hidden"
-                    id="global-back-btn" onclick="goBack()">
-                    <i class="fa-solid fa-arrow-left text-sm"></i>
-                </button>
-                <div
-                    class="w-8 h-8 rounded-lg bg-[#00f0b5]/15 border border-[#00f0b5]/40 flex items-center justify-center text-[#00f0b5]">
-                    <i class="fa-solid fa-shield-halved text-sm"></i>
-                </div>
-                <div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="text-xs font-bold tracking-wider text-white">VAULTKEY</span>
-                        <span class="text-[10px] text-slate-400 font-mono">//</span>
-                        <span class="text-xs text-slate-300 font-medium" id="screen-title">Assets</span>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-1.5 h-1.5 rounded-full bg-[#00f0b5] animate-pulse"></span>
-                        <span class="text-[9px] uppercase tracking-wider text-[#00f0b5] font-mono">AIR-GAPPED
-                            ENCLAVE</span>
-                    </div>
-                </div>
-            </div>
-            <div class="flex items-center space-x-2">
-                <div
-                    class="px-2 py-0.5 rounded border border-[#00f0b5]/30 bg-[#00f0b5]/10 text-[10px] font-mono text-[#00f0b5] flex items-center gap-1">
-                    <i class="fa-solid fa-link-slash text-[9px]"></i> ISOLATED
-                </div>
-                <div
-                    class="w-7 h-7 rounded-full bg-[#1e2433] border border-[#2b3345] flex items-center justify-center text-xs text-slate-300">
-                    <i class="fa-solid fa-user"></i>
-                </div>
-            </div>
-        </header>
-        <!-- Quick Flow Switcher Banner (Interactive Prototype Jump Bar) -->
-        <div
-            class="bg-[#0b0e14] border-b border-[#1f2430] px-3 py-1.5 flex items-center justify-between text-[11px] overflow-x-auto no-scrollbar gap-2">
-            <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider shrink-0"><i
-                    class="fa-solid fa-route text-[#00f0b5]"></i> FLOW:</span>
-            <div class="flex items-center gap-1.5 shrink-0">
-                <button
-                    class="px-2 py-0.5 rounded bg-[#191c24] text-slate-300 hover:text-[#00f0b5] transition text-[10px]"
-                    onclick="navigateTo('screen-home')">Home</button>
-                <button
-                    class="px-2 py-0.5 rounded bg-[#191c24] text-slate-300 hover:text-[#00f0b5] transition text-[10px]"
-                    onclick="openAddCoinModal()">+ Coin</button>
-                <button
-                    class="px-2 py-0.5 rounded bg-[#191c24] text-slate-300 hover:text-[#00f0b5] transition text-[10px]"
-                    onclick="navigateTo('screen-coin-detail')">ETH Detail</button>
-                <button
-                    class="px-2 py-0.5 rounded bg-[#191c24] text-slate-300 hover:text-[#00f0b5] transition text-[10px]"
-                    onclick="navigateTo('screen-receive')">Receive</button>
-                <button
-                    class="px-2 py-0.5 rounded bg-[#191c24] text-slate-300 hover:text-[#00f0b5] transition text-[10px]"
-                    onclick="navigateTo('screen-send')">Send</button>
-                <button
-                    class="px-2 py-0.5 rounded bg-[#191c24] text-slate-300 hover:text-[#00f0b5] transition text-[10px]"
-                    onclick="navigateTo('screen-unsigned-qr')">Unsigned QR</button>
-                <button
-                    class="px-2 py-0.5 rounded bg-[#191c24] text-slate-300 hover:text-[#00f0b5] transition text-[10px]"
-                    onclick="navigateTo('screen-scan-signed')">Scanner</button>
-                <button
-                    class="px-2 py-0.5 rounded bg-[#191c24] text-slate-300 hover:text-[#00f0b5] transition text-[10px]"
-                    onclick="navigateTo('screen-confirm')">Confirm</button>
-            </div>
-        </div>
-        <!-- ========================================== -->
-        <!-- 1. SCREEN: HOME (ASSETS & COIN LIST) -->
-        <!-- ========================================== -->
-        <div class="screen active p-4 pb-24" id="screen-home">
-            <!-- Net Valuation Card -->
-            <div
-                class="bg-gradient-to-b from-[#161a24] to-[#12151e] rounded-2xl p-5 border border-[#232938] relative overflow-hidden mb-5">
-                <div class="absolute -right-8 -top-8 w-32 h-32 bg-[#00f0b5]/10 rounded-full blur-2xl"></div>
-                <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
-                    <span class="tracking-wider uppercase font-mono">NET CUSTODY VALUATION</span>
-                    <span
-                        class="bg-[#00f0b5]/15 text-[#00f0b5] text-[11px] font-mono px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <i class="fa-solid fa-arrow-trend-up"></i> +4.82%
-                    </span>
-                </div>
-                <div class="text-3xl font-bold font-mono tracking-tight text-white mb-1" id="home-total-balance">
-                    $64,285.40 <span class="text-xs text-slate-400 font-sans font-normal">USD</span></div>
-                <div class="text-xs text-slate-400 font-mono mb-4">+$2,950.12 (24h) • <span
-                        class="text-[#00f0b5]">Realtime Oracle</span></div>
-                <!-- Quick Action Grid -->
-                <div class="grid grid-cols-3 gap-2.5">
-                    <button
-                        class="flex flex-col items-center justify-center py-2.5 rounded-xl bg-[#1d2230] border border-[#283244] hover:border-[#00f0b5]/50 transition group"
-                        onclick="navigateTo('screen-send')">
-                        <div
-                            class="w-8 h-8 rounded-lg bg-[#252c3e] flex items-center justify-center text-slate-200 group-hover:text-[#00f0b5] transition mb-1">
-                            <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
-                        </div>
-                        <span class="text-xs font-semibold text-slate-200">Send</span>
-                        <span class="text-[9px] text-slate-400 font-mono">AIR-GAP</span>
-                    </button>
-                    <button
-                        class="flex flex-col items-center justify-center py-2.5 rounded-xl bg-[#1d2230] border border-[#283244] hover:border-[#00f0b5]/50 transition group"
-                        onclick="navigateTo('screen-receive')">
-                        <div
-                            class="w-8 h-8 rounded-lg bg-[#252c3e] flex items-center justify-center text-slate-200 group-hover:text-[#00f0b5] transition mb-1">
-                            <i class="fa-solid fa-arrow-down-to-bracket text-xs"></i>
-                        </div>
-                        <span class="text-xs font-semibold text-slate-200">Receive</span>
-                        <span class="text-[9px] text-slate-400 font-mono">QR CODE</span>
-                    </button>
-                    <button
-                        class="flex flex-col items-center justify-center py-2.5 rounded-xl bg-[#00f0b5] text-[#0b0e14] font-semibold hover:bg-[#1affc4] transition group shadow-lg shadow-[#00f0b5]/20"
-                        onclick="openAddCoinModal()">
-                        <div class="w-8 h-8 rounded-lg bg-[#0b0e14]/15 flex items-center justify-center mb-1">
-                            <i class="fa-solid fa-plus text-sm"></i>
-                        </div>
-                        <span class="text-xs font-bold">Add Coin</span>
-                        <span class="text-[9px] opacity-80 font-mono">TRACK NEW</span>
-                    </button>
-                </div>
-            </div>
-            <!-- Asset Filter Chips -->
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center space-x-2">
-                    <button class="px-3 py-1 rounded-lg bg-[#00f0b5] text-[#0b0e14] text-xs font-bold">All Assets
-                        (4)</button>
-                    <button
-                        class="px-3 py-1 rounded-lg bg-[#181c26] text-slate-400 text-xs hover:text-white transition">Layer
-                        1</button>
-                    <button
-                        class="px-3 py-1 rounded-lg bg-[#181c26] text-slate-400 text-xs hover:text-white transition">DeFi</button>
-                </div>
-                <span class="text-[11px] font-mono text-slate-400"><i class="fa-solid fa-eye text-xs"></i>
-                    BALANCES</span>
-            </div>
-            <!-- Coins List -->
-            <div class="space-x-0 space-y-2.5" id="coins-container">
-                <!-- Ethereum Card (Primary Flow Trigger) -->
-                <div class="p-3.5 rounded-xl bg-[#151922] border border-[#222836] hover:border-[#00f0b5]/40 transition cursor-pointer flex items-center justify-between"
-                    onclick="navigateTo('screen-coin-detail')">
-                    <div class="flex items-center space-x-3">
-                        <div
-                            class="w-10 h-10 rounded-xl bg-[#627EEA]/15 border border-[#627EEA]/30 flex items-center justify-center text-[#627EEA]">
-                            <i class="fa-brands fa-ethereum text-lg"></i>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-1.5">
-                                <span class="font-bold text-sm text-white">Ethereum</span>
-                                <span
-                                    class="text-[10px] bg-[#1e2330] text-slate-300 px-1.5 py-0.2 rounded font-mono">ETH</span>
-                            </div>
-                            <div class="text-[11px] text-slate-400 font-mono flex items-center gap-1 mt-0.5">
-                                <span class="w-1.5 h-1.5 rounded-full bg-[#00f0b5]"></span> Ethereum Mainnet •
-                                0x71C...a4F9
-                            </div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-bold font-mono text-sm text-white">8.5000 ETH</div>
-                        <div class="text-xs text-slate-400 font-mono">$28,475.00 <span
-                                class="text-[#00f0b5] text-[10px]">+5.1%</span></div>
-                    </div>
-                </div>
-                <!-- Bitcoin Card -->
-                <div
-                    class="p-3.5 rounded-xl bg-[#151922] border border-[#222836] hover:border-amber-500/40 transition cursor-pointer flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div
-                            class="w-10 h-10 rounded-xl bg-[#F7931A]/15 border border-[#F7931A]/30 flex items-center justify-center text-[#F7931A]">
-                            <i class="fa-brands fa-bitcoin text-lg"></i>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-1.5">
-                                <span class="font-bold text-sm text-white">Bitcoin</span>
-                                <span
-                                    class="text-[10px] bg-[#1e2330] text-slate-300 px-1.5 py-0.2 rounded font-mono">BTC</span>
-                            </div>
-                            <div class="text-[11px] text-slate-400 font-mono flex items-center gap-1 mt-0.5">
-                                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Bitcoin Native SegWit •
-                                bc1q...9v3x
-                            </div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-bold font-mono text-sm text-white">1.4285 BTC</div>
-                        <div class="text-xs text-slate-400 font-mono">$91,840.12 <span
-                                class="text-[#00f0b5] text-[10px]">+2.4%</span></div>
-                    </div>
-                </div>
-                <!-- Solana Card -->
-                <div
-                    class="p-3.5 rounded-xl bg-[#151922] border border-[#222836] hover:border-emerald-500/40 transition cursor-pointer flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div
-                            class="w-10 h-10 rounded-xl bg-[#14F195]/15 border border-[#14F195]/30 flex items-center justify-center text-[#14F195]">
-                            <i class="fa-solid fa-bolt text-sm"></i>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-1.5">
-                                <span class="font-bold text-sm text-white">Solana</span>
-                                <span
-                                    class="text-[10px] bg-[#1e2330] text-slate-300 px-1.5 py-0.2 rounded font-mono">SOL</span>
-                            </div>
-                            <div class="text-[11px] text-slate-400 font-mono flex items-center gap-1 mt-0.5">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Solana Mainnet-Beta •
-                                7xKX...m42P
-                            </div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-bold font-mono text-sm text-white">145.20 SOL</div>
-                        <div class="text-xs text-slate-400 font-mono">$21,780.00 <span
-                                class="text-rose-400 text-[10px]">-1.2%</span></div>
-                    </div>
-                </div>
-                <!-- USDC Card -->
-                <div
-                    class="p-3.5 rounded-xl bg-[#151922] border border-[#222836] hover:border-blue-400/40 transition cursor-pointer flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div
-                            class="w-10 h-10 rounded-xl bg-[#2775CA]/15 border border-[#2775CA]/30 flex items-center justify-center text-[#2775CA]">
-                            <i class="fa-solid fa-dollar-sign text-sm"></i>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-1.5">
-                                <span class="font-bold text-sm text-white">USD Coin</span>
-                                <span
-                                    class="text-[10px] bg-[#1e2330] text-slate-300 px-1.5 py-0.2 rounded font-mono">USDC</span>
-                            </div>
-                            <div class="text-[11px] text-slate-400 font-mono flex items-center gap-1 mt-0.5">
-                                <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span> Ethereum (ERC-20) •
-                                0x71C...a4F9
-                            </div>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-bold font-mono text-sm text-white">12,450.00 USDC</div>
-                        <div class="text-xs text-slate-400 font-mono">$12,450.00 <span
-                                class="text-slate-400 text-[10px]">0.0%</span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- ========================================== -->
-        <!-- 2. SCREEN: COIN DETAILS (ETHEREUM) -->
-        <!-- ========================================== -->
-        <div class="screen p-4 pb-24" id="screen-coin-detail">
-            <!-- Sub-header Breadcrumb -->
-            <div class="flex items-center justify-between mb-4">
-                <button class="text-xs text-slate-400 hover:text-white flex items-center gap-1.5"
-                    onclick="navigateTo('screen-home')">
-                    <i class="fa-solid fa-chevron-left text-[10px]"></i> Back to Assets
-                </button>
-                <div
-                    class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#00f0b5]/10 border border-[#00f0b5]/20 text-[10px] font-mono text-[#00f0b5]">
-                    <span class="w-1.5 h-1.5 rounded-full bg-[#00f0b5]"></span> ETH MAINNET (SYNCED)
-                </div>
-            </div>
-            <!-- Security Banner -->
-            <div class="bg-[#141822] border border-[#212838] rounded-xl p-3 mb-4 flex items-center gap-3">
-                <div
-                    class="w-7 h-7 rounded-lg bg-[#00f0b5]/10 text-[#00f0b5] flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-lock text-xs"></i>
-                </div>
-                <div class="text-xs">
-                    <div class="font-bold text-white flex items-center gap-1">Air-Gapped Vault Mode Active <span
-                            class="w-1.5 h-1.5 rounded-full bg-[#00f0b5]"></span></div>
-                    <div class="text-[11px] text-slate-400">Private keys strictly isolated on hardware enclave.</div>
-                </div>
-            </div>
-            <!-- Asset Card & Sparkline -->
-            <div class="bg-[#151922] border border-[#222838] rounded-2xl p-5 mb-4">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center space-x-2.5">
-                        <div class="w-9 h-9 rounded-xl bg-[#627EEA]/20 text-[#627EEA] flex items-center justify-center">
-                            <i class="fa-brands fa-ethereum text-base"></i>
-                        </div>
-                        <div>
-                            <div class="font-bold text-base text-white">Ethereum <span
-                                    class="text-xs font-mono text-slate-400">ETH</span></div>
-                            <div class="text-xs text-slate-400">$3,350.00 USD <span
-                                    class="text-[#00f0b5] font-mono text-[11px]">+5.12%</span></div>
-                        </div>
-                    </div>
-                    <span class="text-[10px] font-mono bg-[#1b212f] px-2 py-0.5 rounded text-slate-300">CHAIN ID:
-                        1</span>
-                </div>
-                <div class="mt-4 mb-2">
-                    <div class="text-[11px] font-mono uppercase tracking-wider text-slate-400">AVAILABLE VAULT BALANCE
-                    </div>
-                    <div class="text-3xl font-bold font-mono text-white mt-0.5">8.5000 <span
-                            class="text-lg text-[#00f0b5]">ETH</span></div>
-                    <div class="text-xs font-mono text-slate-400 mt-0.5">≈ $28,475.00 USD • <span
-                            class="text-[#00f0b5]">Unencumbered</span></div>
-                </div>
-                <!-- SVG Sparkline -->
-                <div class="h-14 w-full mt-3">
-                    <svg class="w-full h-full overflow-visible" viewbox="0 0 300 60">
-                        <path d="M0,45 Q50,55 90,38 T180,25 T240,15 T300,5" fill="none" stroke="#00f0b5"
-                            stroke-width="2.5"></path>
-                        <circle class="animate-ping" cx="300" cy="5" fill="#00f0b5" r="4"></circle>
-                        <circle cx="300" cy="5" fill="#ffffff" r="3"></circle>
-                    </svg>
-                </div>
-            </div>
-            <!-- Primary Action Buttons (Send / Receive) -->
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <button
-                    class="py-3 px-4 rounded-xl bg-[#1b202c] border border-[#2b3345] hover:border-[#00f0b5] text-white flex items-center justify-center gap-2 group transition"
-                    onclick="navigateTo('screen-send')">
-                    <i class="fa-solid fa-arrow-up text-sm text-[#00f0b5]"></i>
-                    <div class="text-left">
-                        <div class="text-xs font-bold leading-none">Send</div>
-                        <div class="text-[9px] text-slate-400 font-mono mt-0.5">Air-Gap Sign</div>
-                    </div>
-                </button>
-                <button
-                    class="py-3 px-4 rounded-xl bg-[#00f0b5] hover:bg-[#1affc4] text-[#0b0e14] flex items-center justify-center gap-2 transition shadow-lg shadow-[#00f0b5]/20"
-                    onclick="navigateTo('screen-receive')">
-                    <i class="fa-solid fa-arrow-down text-sm font-bold"></i>
-                    <div class="text-left">
-                        <div class="text-xs font-bold leading-none">Receive</div>
-                        <div class="text-[9px] opacity-80 font-mono mt-0.5">Show QR Code</div>
-                    </div>
-                </button>
-            </div>
-            <!-- Deposit Address Container -->
-            <div class="bg-[#151922] border border-[#222838] rounded-xl p-3.5 mb-4">
-                <div class="flex items-center justify-between text-xs mb-2">
-                    <span class="text-slate-400 font-mono uppercase text-[10px]"><i
-                            class="fa-solid fa-key text-[10px] text-[#00f0b5]"></i> VAULT DEPOSIT ADDRESS</span>
-                    <a class="text-[11px] text-[#00f0b5] hover:underline font-mono" href="#"
-                        onclick="copyText('0x71C25b184F84F8b417cCc692fDe9eAC42646a4F9', 'Address copied to clipboard!'); return false;">Etherscan
-                        <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a>
-                </div>
-                <div class="flex items-center justify-between bg-[#0e1117] border border-[#1f2533] rounded-lg p-2.5">
-                    <span
-                        class="font-mono text-xs text-slate-200 truncate pr-2">0x71C25b184F84F8b417cCc692fDe9eAC42646a4F9</span>
-                    <button class="p-1.5 rounded bg-[#1c2230] text-[#00f0b5] hover:bg-[#252c3e] transition text-xs"
-                        onclick="copyText('0x71C25b184F84F8b417cCc692fDe9eAC42646a4F9', 'Address copied!')">
-                        <i class="fa-regular fa-copy"></i>
-                    </button>
-                </div>
-            </div>
-            <!-- Telemetry Bar -->
-            <div class="grid grid-cols-2 gap-2.5 mb-4">
-                <div class="p-3 rounded-xl bg-[#151922] border border-[#222838]">
-                    <div class="text-[10px] font-mono text-slate-400">BASE FEE (GAS)</div>
-                    <div class="text-sm font-bold font-mono text-white mt-0.5">14.2 Gwei</div>
-                    <div class="text-[10px] text-slate-400 font-mono">Instant finality</div>
-                </div>
-                <div class="p-3 rounded-xl bg-[#151922] border border-[#222838]">
-                    <div class="text-[10px] font-mono text-slate-400">STAKING YIELD</div>
-                    <div class="text-sm font-bold font-mono text-[#00f0b5] mt-0.5">3.42% APR</div>
-                    <div class="text-[10px] text-slate-400 font-mono">Native Validator</div>
-                </div>
-            </div>
-            <!-- Recent Ledger History -->
-            <div class="bg-[#151922] border border-[#222838] rounded-xl p-3.5">
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-xs font-bold text-white flex items-center gap-1.5"><i
-                            class="fa-solid fa-clock-rotate-left text-slate-400"></i> Recent ETH Ledger</span>
-                    <span class="text-[10px] font-mono text-slate-400">View All (42)</span>
-                </div>
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between p-2 rounded-lg bg-[#0e1117] text-xs">
-                        <div class="flex items-center gap-2">
-                            <div
-                                class="w-6 h-6 rounded-md bg-[#00f0b5]/15 text-[#00f0b5] flex items-center justify-center text-[10px]">
-                                <i class="fa-solid fa-arrow-down"></i></div>
-                            <div>
-                                <div class="font-medium text-slate-200">Received from 0x4a...</div>
-                                <div class="text-[10px] text-slate-400 font-mono">Today, 08:14 • <span
-                                        class="text-[#00f0b5]">Confirmed</span></div>
-                            </div>
-                        </div>
-                        <div class="text-right font-mono text-[#00f0b5] font-semibold">+1.200 ETH</div>
-                    </div>
-                    <div class="flex items-center justify-between p-2 rounded-lg bg-[#0e1117] text-xs">
-                        <div class="flex items-center gap-2">
-                            <div
-                                class="w-6 h-6 rounded-md bg-rose-500/15 text-rose-400 flex items-center justify-center text-[10px]">
-                                <i class="fa-solid fa-arrow-up"></i></div>
-                            <div>
-                                <div class="font-medium text-slate-200">Sent to Cold Vault</div>
-                                <div class="text-[10px] text-slate-400 font-mono">Yesterday • <span
-                                        class="text-slate-400">Confirmed</span></div>
-                            </div>
-                        </div>
-                        <div class="text-right font-mono text-rose-400 font-semibold">-0.500 ETH</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- ========================================== -->
-        <!-- 3. SCREEN: RECEIVE ETH (QR CODE) -->
-        <!-- ========================================== -->
-        <div class="screen p-4 pb-20" id="screen-receive">
-            <div class="flex items-center justify-between mb-3">
-                <button class="text-xs text-slate-400 hover:text-white flex items-center gap-1.5"
-                    onclick="navigateTo('screen-coin-detail')">
-                    <i class="fa-solid fa-chevron-left text-[10px]"></i> Coin Details
-                </button>
-                <div
-                    class="px-2 py-0.5 rounded bg-[#00f0b5]/10 border border-[#00f0b5]/20 text-[10px] font-mono text-[#00f0b5]">
-                    ENCLAVE MATCH
-                </div>
-            </div>
-            <div class="mb-3">
-                <h2 class="text-xl font-bold text-white">Receive Ethereum</h2>
-                <p class="text-xs text-slate-400">Deposit ETH and ERC-20 tokens directly into your isolated cold vault.
-                </p>
-            </div>
-            <!-- Warning Banner -->
-            <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 mb-4 flex items-start gap-2.5">
-                <i class="fa-solid fa-triangle-exclamation text-amber-400 text-sm mt-0.5"></i>
-                <div class="text-xs">
-                    <div class="font-bold text-amber-300">DEPOSIT PROTOCOL NOTICE</div>
-                    <div class="text-slate-300 text-[11px] leading-relaxed mt-0.5">
-                        Send only <strong class="text-white">Ethereum (ETH)</strong> and ERC-20 tokens to this address
-                        on the <strong class="text-white">Ethereum Mainnet</strong>. Unsupported chains will cause
-                        permanent fund loss.
-                    </div>
-                </div>
-            </div>
-            <!-- QR Display Card -->
-            <div
-                class="bg-[#151922] border border-[#222838] rounded-2xl p-6 flex flex-col items-center justify-center text-center relative mb-4">
-                <div
-                    class="text-[10px] font-mono text-[#00f0b5] bg-[#00f0b5]/10 px-2.5 py-0.5 rounded-full border border-[#00f0b5]/20 mb-4 flex items-center gap-1.5">
-                    <i class="fa-solid fa-shield"></i> AIR-GAP ENCRYPTED PAYLOAD
-                </div>
-                <!-- Scalable QR Code Frame -->
-                <div class="relative p-3 bg-white rounded-2xl shadow-xl mb-4">
-                    <!-- Simulated High-Density QR -->
-                    <img alt="Receive Address QR" class="w-48 h-48 block"
-                        src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg" />
-                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div
-                            class="w-10 h-10 rounded-xl bg-[#10131a] border-2 border-white flex items-center justify-center text-[#00f0b5] shadow-lg">
-                            <i class="fa-brands fa-ethereum text-lg"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-[11px] font-mono text-slate-400 flex items-center gap-1.5">
-                    <i class="fa-solid fa-camera text-xs"></i> Scan to transfer to primary vault ledger
-                </div>
-            </div>
-            <!-- Public Address & Copy -->
-            <div class="bg-[#151922] border border-[#222838] rounded-xl p-3.5 mb-4">
-                <div class="flex items-center justify-between text-xs mb-1.5">
-                    <span class="text-slate-400 font-mono text-[10px]">VAULT PUBLIC ADDRESS</span>
-                    <span class="text-[10px] font-mono text-slate-400">DERIVATION: M/44'/60'/0'/0/0</span>
-                </div>
-                <div
-                    class="bg-[#0e1117] border border-[#1f2533] rounded-lg p-2.5 font-mono text-xs text-slate-200 break-all mb-3 select-all">
-                    0x71C25b184F84F8b417cCc692fDe9eAC42646a4F9
-                </div>
-                <button
-                    class="w-full py-3 rounded-xl bg-[#00f0b5] hover:bg-[#1affc4] text-[#0b0e14] font-bold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-[#00f0b5]/20"
-                    onclick="copyText('0x71C25b184F84F8b417cCc692fDe9eAC42646a4F9', 'Address copied to clipboard!')">
-                    <i class="fa-regular fa-copy text-sm"></i> Copy Address
-                </button>
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-                <button
-                    class="py-2.5 rounded-lg bg-[#191d28] border border-[#262e40] text-xs font-semibold text-slate-300 hover:text-white flex items-center justify-center gap-1.5"
-                    onclick="showToast('Share intent opened')">
-                    <i class="fa-solid fa-share-nodes"></i> Share Address
-                </button>
-                <button
-                    class="py-2.5 rounded-lg bg-[#191d28] border border-[#262e40] text-xs font-semibold text-slate-300 hover:text-white flex items-center justify-center gap-1.5"
-                    onclick="showToast('Invoice request generated')">
-                    <i class="fa-solid fa-sliders"></i> Request Amount
-                </button>
-            </div>
-        </div>
-        <!-- ========================================== -->
-        <!-- 4. SCREEN: SEND TRANSACTION SETUP -->
-        <!-- ========================================== -->
-        <div class="screen p-4 pb-20" id="screen-send">
-            <div class="flex items-center justify-between mb-3">
-                <button class="text-xs text-slate-400 hover:text-white flex items-center gap-1.5"
-                    onclick="navigateTo('screen-coin-detail')">
-                    <i class="fa-solid fa-chevron-left text-[10px]"></i> Coin Details
-                </button>
-                <div
-                    class="px-2 py-0.5 rounded bg-[#00f0b5]/10 border border-[#00f0b5]/20 text-[10px] font-mono text-[#00f0b5]">
-                    ETHEREUM MAINNET
-                </div>
-            </div>
-            <!-- Progress Stepper -->
-            <div class="bg-[#151922] border border-[#222838] rounded-xl p-3 mb-4">
-                <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 mb-1.5">
-                    <span class="text-[#00f0b5] font-semibold flex items-center gap-1.5"><i
-                            class="fa-solid fa-shield-cat"></i> STEP 1/4: PREPARATION</span>
-                    <span>25%</span>
-                </div>
-                <div class="w-full bg-[#1b202c] h-1.5 rounded-full overflow-hidden">
-                    <div class="bg-[#00f0b5] h-full w-1/4 rounded-full"></div>
-                </div>
-            </div>
-            <!-- Coin & Available Balance Card -->
-            <div class="bg-[#151922] border border-[#222838] rounded-xl p-3.5 mb-3">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center space-x-2">
-                        <div
-                            class="w-7 h-7 rounded-lg bg-[#627EEA]/20 text-[#627EEA] flex items-center justify-center text-xs">
-                            <i class="fa-brands fa-ethereum"></i>
-                        </div>
-                        <span class="font-bold text-sm text-white">Ethereum <span
-                                class="text-xs text-slate-400 font-mono">ETH</span></span>
-                    </div>
-                    <button
-                        class="text-[10px] font-mono bg-[#1d2331] text-[#00f0b5] px-2 py-0.5 rounded border border-[#00f0b5]/30 hover:bg-[#00f0b5]/10"
-                        onclick="setSendAmount(8.5)">
-                        USE MAX
-                    </button>
-                </div>
-                <div class="flex items-center justify-between text-xs text-slate-400 font-mono">
-                    <span>Available Vault Liquidity:</span>
-                    <span class="text-white font-bold">8.5000 ETH ($28,475.00)</span>
-                </div>
-            </div>
-            <!-- Recipient Address Input -->
-            <div class="mb-3">
-                <label
-                    class="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
-                    <span>Recipient Address (ETH or ENS)</span>
-                    <span class="text-[#00f0b5] text-[10px]">AIR-GAP FILTER ACTIVE</span>
-                </label>
-                <div class="relative">
-                    <input
-                        class="w-full bg-[#151922] border border-[#222838] focus:border-[#00f0b5] rounded-xl px-3.5 py-3 text-xs font-mono text-white placeholder-slate-500 focus:outline-none"
-                        id="send-recipient-input" placeholder="0x... or ENS domain" type="text"
-                        value="0x388C818CA8B9251b393131C08a73683f2a58" />
-                    <div class="absolute right-2 top-2 flex items-center gap-1">
-                        <button class="p-1.5 text-slate-400 hover:text-[#00f0b5] text-xs"
-                            onclick="showToast('Scanner ready')">
-                            <i class="fa-solid fa-qrcode"></i>
-                        </button>
-                        <button class="p-1.5 text-slate-400 hover:text-[#00f0b5] text-xs" onclick="pasteToRecipient()">
-                            <i class="fa-regular fa-paste"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="text-[10px] text-[#00f0b5] font-mono mt-1 flex items-center gap-1">
-                    <i class="fa-solid fa-circle-check text-[9px]"></i> Valid checksummed Ethereum address
-                </div>
-            </div>
-            <!-- Transfer Amount Input -->
-            <div class="mb-4">
-                <div
-                    class="flex items-center justify-between text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1">
-                    <span>Transfer Amount</span>
-                    <span>Asset: ETH</span>
-                </div>
-                <div class="bg-[#151922] border border-[#222838] rounded-xl p-3.5">
-                    <div class="flex items-center justify-between">
-                        <input class="bg-transparent text-2xl font-bold font-mono text-white focus:outline-none w-3/4"
-                            id="send-amount-input" oninput="calculateTotal()" step="0.1" type="number" value="2.5000" />
-                        <span class="font-mono text-sm font-bold text-[#00f0b5]">ETH</span>
-                    </div>
-                    <div class="text-xs font-mono text-slate-400 mt-1" id="send-amount-fiat">≈ $8,375.00 USD</div>
-                    <!-- Percentage Preset Buttons -->
-                    <div class="grid grid-cols-4 gap-1.5 mt-3 pt-3 border-t border-[#1f2533]">
-                        <button
-                            class="py-1 rounded bg-[#1a202d] text-[11px] font-mono text-slate-300 hover:text-[#00f0b5] hover:bg-[#202737]"
-                            onclick="setSendAmount(2.125)">25%</button>
-                        <button
-                            class="py-1 rounded bg-[#1a202d] text-[11px] font-mono text-slate-300 hover:text-[#00f0b5] hover:bg-[#202737]"
-                            onclick="setSendAmount(4.250)">50%</button>
-                        <button
-                            class="py-1 rounded bg-[#1a202d] text-[11px] font-mono text-slate-300 hover:text-[#00f0b5] hover:bg-[#202737]"
-                            onclick="setSendAmount(6.375)">75%</button>
-                        <button
-                            class="py-1 rounded bg-[#1a202d] text-[11px] font-mono text-slate-300 hover:text-[#00f0b5] hover:bg-[#202737]"
-                            onclick="setSendAmount(8.500)">Max</button>
-                    </div>
-                </div>
-            </div>
-            <!-- Network Fee & Total Card -->
-            <div class="bg-[#151922] border border-[#222838] rounded-xl p-3.5 mb-5 space-y-2">
-                <div class="flex items-center justify-between text-xs">
-                    <span class="text-slate-400 flex items-center gap-1.5"><i
-                            class="fa-solid fa-gas-pump text-[#00f0b5]"></i> Network Gas Fee (EIP-1559)</span>
-                    <span class="font-mono text-white font-semibold" id="gas-fee-eth">0.0018 ETH ($6.03)</span>
-                </div>
-                <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono">
-                    <span>Confirmation Velocity</span>
-                    <span class="text-[#00f0b5]">⚡ Priority Normal (~12 sec)</span>
-                </div>
-                <div class="border-t border-[#1f2533] pt-2 flex items-center justify-between text-xs">
-                    <div>
-                        <div class="text-[10px] font-mono text-slate-400 uppercase">TOTAL DEDUCTION</div>
-                        <div class="font-bold text-white text-base font-mono" id="total-deduction-display">2.5018 ETH
-                        </div>
-                    </div>
-                    <div class="text-right font-mono text-xs text-slate-400" id="total-deduction-fiat">≈ $8,381.03 USD
-                    </div>
-                </div>
-            </div>
-            <!-- Submit / Cancel -->
-            <button
-                class="w-full py-3.5 rounded-xl bg-[#00f0b5] hover:bg-[#1affc4] text-[#0b0e14] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition shadow-lg shadow-[#00f0b5]/20 mb-2"
-                onclick="triggerGenerateTransaction()">
-                <i class="fa-solid fa-qrcode text-sm"></i> GENERATE TRANSACTION (QR)
-            </button>
-            <button
-                class="w-full py-2.5 rounded-xl bg-transparent hover:bg-[#1a202d] text-slate-400 text-xs font-semibold"
-                onclick="navigateTo('screen-coin-detail')">
-                Cancel
-            </button>
-        </div>
-        <!-- ========================================== -->
-        <!-- 5. SCREEN: GENERATE UNSIGNED TRANSACTION (AIR-GAP QR) -->
-        <!-- ========================================== -->
-        <div class="screen p-4 pb-20" id="screen-unsigned-qr">
-            <div class="flex items-center justify-between mb-3">
-                <button class="text-xs text-slate-400 hover:text-white flex items-center gap-1.5"
-                    onclick="navigateTo('screen-send')">
-                    <i class="fa-solid fa-chevron-left text-[10px]"></i> Back to Send
-                </button>
-                <div
-                    class="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-[10px] font-mono text-amber-400 flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> AWAITING COLD SIGNATURE
-                </div>
-            </div>
-            <!-- Security Disclaimer Notice -->
-            <div class="bg-[#151922] border border-[#222838] rounded-xl p-3.5 mb-4 flex items-start gap-3">
-                <div
-                    class="w-8 h-8 rounded-lg bg-[#00f0b5]/10 text-[#00f0b5] flex items-center justify-center shrink-0 mt-0.5">
-                    <i class="fa-solid fa-shield-virus text-sm"></i>
-                </div>
-                <div class="text-xs">
-                    <div class="font-bold text-white flex items-center justify-between">
-                        <span>Offline Payload Verification</span>
-                        <span class="text-[9px] font-mono text-[#00f0b5] bg-[#00f0b5]/15 px-1.5 py-0.5 rounded">ZERO
-                            EXPOSURE</span>
-                    </div>
-                    <p class="text-slate-400 text-[11px] leading-relaxed mt-1">
-                        Unsigned transaction payload generated. <strong class="text-slate-200">No funds have departed
-                            your vault.</strong> Present this cryptographic QR code directly to your air-gapped device's
-                        camera optics.
-                    </p>
-                </div>
-            </div>
-            <!-- Unsigned QR Display Canvas Frame -->
-            <div
-                class="bg-[#151922] border border-[#222838] rounded-2xl p-5 flex flex-col items-center justify-center text-center relative mb-4">
-                <div class="w-full flex items-center justify-between text-[11px] font-mono text-slate-400 mb-3">
-                    <span class="text-[#00f0b5] flex items-center gap-1"><span
-                            class="w-1.5 h-1.5 rounded-full bg-[#00f0b5]"></span> ETHEREUM MAINNET</span>
-                    <span>HEX SERIALIZED</span>
-                </div>
-                <!-- The QR Frame -->
-                <div class="relative p-3 bg-white rounded-2xl shadow-2xl mb-3">
-                    <img alt="Unsigned Payload QR" class="w-52 h-52 block"
-                        src="https://www.gstatic.com/labs-code/stitch/stitch-placeholder-300x300.svg" />
-                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div
-                            class="w-10 h-10 rounded-xl bg-[#0b0e14] border-2 border-white flex items-center justify-center text-[#00f0b5] shadow-lg">
-                            <i class="fa-solid fa-qrcode text-base"></i>
-                        </div>
-                    </div>
-                </div>
-                <!-- Byte Metrics -->
-                <div
-                    class="w-full grid grid-cols-4 gap-1 text-center font-mono text-[10px] bg-[#0d1017] p-2 rounded-lg border border-[#1f2533]">
-                    <div><span class="text-slate-400 block">NONCE</span><span class="text-white font-bold">42</span>
-                    </div>
-                    <div><span class="text-slate-400 block">GAS LIMIT</span><span
-                            class="text-white font-bold">21,000</span></div>
-                    <div><span class="text-slate-400 block">CHAIN ID</span><span class="text-white font-bold">1</span>
-                    </div>
-                    <div><span class="text-slate-400 block">SIZE</span><span class="text-[#00f0b5] font-bold">284
-                            B</span></div>
-                </div>
-            </div>
-            <!-- Handshake Instructions -->
-            <div class="bg-[#151922] border border-[#222838] rounded-xl p-3.5 mb-5 space-y-2.5">
-                <div class="text-[10px] font-mono uppercase tracking-wider text-slate-400">HARDWARE HANDSHAKE PROTOCOL
-                </div>
-                <div class="flex items-start gap-2.5 text-xs">
-                    <span
-                        class="w-5 h-5 rounded-full bg-[#1f2636] font-mono text-[10px] flex items-center justify-center text-[#00f0b5] shrink-0">1</span>
-                    <div><strong class="text-slate-200">Activate Cold Signer:</strong> Wake Keystone, Ledger Stax, or
-                        Jade and launch camera.</div>
-                </div>
-                <div class="flex items-start gap-2.5 text-xs">
-                    <span
-                        class="w-5 h-5 rounded-full bg-[#1f2636] font-mono text-[10px] flex items-center justify-center text-[#00f0b5] shrink-0">2</span>
-                    <div><strong class="text-slate-200">Scan Unsigned Code:</strong> Point hardware camera at the QR
-                        code above.</div>
-                </div>
-                <div class="flex items-start gap-2.5 text-xs">
-                    <span
-                        class="w-5 h-5 rounded-full bg-[#1f2636] font-mono text-[10px] flex items-center justify-center text-[#00f0b5] shrink-0">3</span>
-                    <div><strong class="text-slate-200">Sign &amp; Verify:</strong> Confirm 2.5000 ETH outbound and
-                        display signed response.</div>
-                </div>
-            </div>
-            <!-- Scan Signed CTA -->
-            <button
-                class="w-full py-3.5 rounded-xl bg-[#00f0b5] hover:bg-[#1affc4] text-[#0b0e14] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition shadow-lg shadow-[#00f0b5]/20 mb-2"
-                onclick="navigateTo('screen-scan-signed')">
-                <i class="fa-solid fa-camera text-sm"></i> SCAN SIGNED TRANSACTION (CAMERA)
-            </button>
-            <button
-                class="w-full py-2.5 rounded-xl bg-transparent hover:bg-[#1a202d] text-slate-400 text-xs font-semibold"
-                onclick="navigateTo('screen-home')">
-                Cancel &amp; Discard Transaction
-            </button>
-        </div>
-        <!-- ========================================== -->
-        <!-- 6. SCREEN: SCAN SIGNED TRANSACTION (VIEWFINDER) -->
-        <!-- ========================================== -->
-        <div class="screen p-4 pb-20" id="screen-scan-signed">
-            <div class="flex items-center justify-between mb-3">
-                <button class="text-xs text-slate-400 hover:text-white flex items-center gap-1.5"
-                    onclick="navigateTo('screen-unsigned-qr')">
-                    <i class="fa-solid fa-chevron-left text-[10px]"></i> Back
-                </button>
-                <div
-                    class="px-2 py-0.5 rounded bg-[#00f0b5]/10 border border-[#00f0b5]/20 text-[10px] font-mono text-[#00f0b5]">
-                    OPTICAL SCANNER ACTIVE
-                </div>
-            </div>
-            <div class="mb-3">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-bold text-white">Scan Signed QR Code</h2>
-                    <span class="text-[10px] font-mono text-slate-400">STEP 3/4</span>
-                </div>
-                <p class="text-xs text-slate-400">Align your hardware signer's screen within the targeting brackets.</p>
-            </div>
-            <!-- Camera Viewfinder Simulation Frame -->
-            <div
-                class="bg-black border border-[#262f42] rounded-2xl p-4 flex flex-col items-center justify-center relative overflow-hidden mb-4 min-h-[300px]">
-                <!-- Animated Matrix Grid Background -->
-                <div
-                    class="absolute inset-0 opacity-15 bg-[radial-gradient(#00f0b5_1px,transparent_1px)] [background-size:16px_16px]">
-                </div>
-                <!-- Targeting Reticle -->
-                <div
-                    class="relative w-60 h-60 border-2 border-dashed border-[#00f0b5]/40 rounded-xl flex items-center justify-center overflow-hidden">
-                    <!-- Corner Markers -->
-                    <div class="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-[#00f0b5]"></div>
-                    <div class="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-[#00f0b5]"></div>
-                    <div class="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-[#00f0b5]"></div>
-                    <div class="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-[#00f0b5]"></div>
-                    <!-- Animated Scan Beam -->
-                    <div
-                        class="scanner-beam absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#00f0b5] to-transparent shadow-[0_0_15px_#00f0b5]">
-                    </div>
-                    <div class="text-center p-4">
-                        <i class="fa-solid fa-qrcode text-3xl text-[#00f0b5]/60 mb-2"></i>
-                        <div class="text-[11px] font-mono text-slate-300">SEEKING PAYLOAD</div>
-                        <div class="text-[9px] font-mono text-slate-400">SEC-P256K1 CURVE</div>
-                    </div>
-                </div>
-                <!-- Viewfinder Controls -->
-                <div class="absolute bottom-3 left-4 right-4 flex items-center justify-between text-xs text-slate-400">
-                    <div class="flex items-center gap-1 font-mono text-[10px]">
-                        <span class="w-2 h-2 rounded-full bg-[#00f0b5] animate-ping"></span> 60 FPS • OPTICAL LENS A
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button class="p-1.5 rounded-lg bg-[#191e2b] text-slate-300 hover:text-white"
-                            onclick="showToast('Torch toggled')"><i class="fa-solid fa-bolt"></i></button>
-                        <button class="p-1.5 rounded-lg bg-[#191e2b] text-slate-300 hover:text-white"
-                            onclick="showToast('Camera flipped')"><i class="fa-solid fa-camera-rotate"></i></button>
-                    </div>
-                </div>
-            </div>
-            <!-- Ingestion Telemetry -->
-            <div class="bg-[#151922] border border-[#222838] rounded-xl p-3 mb-4">
-                <div class="flex items-center justify-between text-[11px] font-mono mb-1">
-                    <span class="text-slate-300 font-semibold flex items-center gap-1.5"><i
-                            class="fa-solid fa-network-wired text-[#00f0b5]"></i> Multipart Ingestion Mode</span>
-                    <span class="text-[#00f0b5]">READY</span>
-                </div>
-                <div class="w-full bg-[#1b202c] h-1.5 rounded-full overflow-hidden">
-                    <div class="bg-[#00f0b5] h-full w-full"></div>
-                </div>
-                <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 mt-1">
-                    <span>Part 1 of 1 Ready</span>
-                    <span>100% Cached</span>
-                </div>
-            </div>
-            <!-- Primary Simulator Button (Advances Flow to Screen 7 Confirm) -->
-            <button
-                class="w-full py-3.5 rounded-xl bg-[#00f0b5] hover:bg-[#1affc4] text-[#0b0e14] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition shadow-lg shadow-[#00f0b5]/20 mb-2"
-                onclick="simulateScanSuccess()">
-                <i class="fa-solid fa-fingerprint text-sm"></i> SIMULATE SUCCESSFUL INGESTION
-            </button>
-            <button
-                class="w-full py-2.5 rounded-xl bg-transparent hover:bg-[#1a202d] text-slate-400 text-xs font-semibold"
-                onclick="navigateTo('screen-unsigned-qr')">
-                Cancel &amp; Return to Unsigned QR
-            </button>
-        </div>
-        <!-- ========================================== -->
-        <!-- 7. SCREEN: TRANSACTION CONFIRMATION -->
-        <!-- ========================================== -->
-        <div class="screen p-4 pb-20" id="screen-confirm">
-            <div class="flex items-center justify-between mb-3">
-                <button class="text-xs text-slate-400 hover:text-white flex items-center gap-1.5"
-                    onclick="navigateTo('screen-scan-signed')">
-                    <i class="fa-solid fa-chevron-left text-[10px]"></i> Back to Scanner
-                </button>
-                <div
-                    class="px-2 py-0.5 rounded bg-[#00f0b5]/15 border border-[#00f0b5]/30 text-[10px] font-mono text-[#00f0b5] flex items-center gap-1">
-                    <i class="fa-solid fa-signature"></i> ECDSA VERIFIED
-                </div>
-            </div>
-            <!-- Signature Validated Badge -->
-            <div
-                class="bg-gradient-to-r from-[#00f0b5]/15 via-[#151922] to-[#151922] border border-[#00f0b5]/30 rounded-xl p-3.5 mb-4 flex items-center gap-3">
-                <div
-                    class="w-9 h-9 rounded-xl bg-[#00f0b5] text-[#0b0e14] flex items-center justify-center font-bold text-base shrink-0">
-                    <i class="fa-solid fa-check-double"></i>
-                </div>
-                <div>
-                    <div class="font-bold text-white text-xs">Cold Signature Authenticated</div>
-                    <div class="text-[11px] text-slate-300 mt-0.5">Verified cryptographic (r, s, v) components match
-                        root of trust.</div>
-                </div>
-            </div>
-            <!-- Transaction Overview Card -->
-            <div class="bg-[#151922] border border-[#222838] rounded-2xl p-4 mb-4">
-                <div class="flex items-center justify-between pb-3 border-b border-[#1f2533]">
-                    <div class="flex items-center gap-2">
-                        <div
-                            class="w-7 h-7 rounded-lg bg-[#627EEA]/20 text-[#627EEA] flex items-center justify-center text-xs">
-                            <i class="fa-brands fa-ethereum"></i>
-                        </div>
-                        <span class="font-bold text-sm text-white">Ethereum Mainnet</span>
-                    </div>
-                    <span class="text-[10px] font-mono bg-[#1b212f] px-2 py-0.5 rounded text-[#00f0b5]">CHAIN ID:
-                        1</span>
-                </div>
-                <!-- Recipient Target -->
-                <div class="py-3 border-b border-[#1f2533]">
-                    <div
-                        class="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
-                        <span>RECIPIENT TARGET</span>
-                        <span class="text-[#00f0b5] text-[10px]"><i class="fa-solid fa-circle-check"></i>
-                            WHITELISTED</span>
-                    </div>
-                    <div
-                        class="font-mono text-xs text-white bg-[#0f1218] p-2.5 rounded-lg break-all border border-[#1f2533]">
-                        0x388C818CA8B9251b393131C08a73683f2a58
-                    </div>
-                </div>
-                <!-- Amount & Breakdown -->
-                <div class="pt-3 space-y-2">
-                    <div class="flex items-center justify-between text-xs">
-                        <span class="text-slate-400">Transfer Principal</span>
-                        <span class="font-mono font-bold text-white">2.5000 ETH <span
-                                class="text-slate-400 text-[10px] font-normal">(≈ $8,375.00)</span></span>
-                    </div>
-                    <div class="flex items-center justify-between text-xs">
-                        <span class="text-slate-400">Network Gas Fee (Max Cap)</span>
-                        <span class="font-mono text-slate-300">0.0018 ETH <span
-                                class="text-slate-400 text-[10px] font-normal">(≈ $6.03)</span></span>
-                    </div>
-                    <div class="border-t border-[#1f2533] pt-2 flex items-center justify-between">
-                        <span class="text-xs font-bold text-white uppercase font-mono">Total Deducted</span>
-                        <div class="text-right">
-                            <div class="font-bold font-mono text-base text-[#00f0b5]">2.5018 ETH</div>
-                            <div class="text-[10px] font-mono text-slate-400">≈ $8,381.03 USD</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Reversible Notice -->
-            <div
-                class="bg-[#121620] border border-[#1f2636] rounded-xl p-3 mb-5 flex items-start gap-2.5 text-slate-400 text-xs">
-                <i class="fa-solid fa-circle-info text-[#00f0b5] text-sm mt-0.5"></i>
-                <div class="text-[11px] leading-relaxed">
-                    Broadcasting will submit this signed payload directly to Ethereum RPC nodes via encrypted tunnel.
-                    <strong class="text-white">Reversion after broadcast is mathematically impossible.</strong>
-                </div>
-            </div>
-            <!-- Broadcast CTA Trigger -->
-            <button
-                class="w-full py-4 rounded-xl bg-[#00f0b5] hover:bg-[#1affc4] text-[#0b0e14] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition shadow-xl shadow-[#00f0b5]/25 mb-2"
-                onclick="startBroadcastProcess()">
-                <i class="fa-solid fa-tower-broadcast text-base"></i> BROADCAST TRANSACTION
-            </button>
-            <button
-                class="w-full py-2.5 rounded-xl bg-transparent hover:bg-[#1a202d] text-rose-400 text-xs font-semibold"
-                onclick="navigateTo('screen-home')">
-                Cancel &amp; Reject Payload
-            </button>
-        </div>
-        <!-- ========================================== -->
-        <!-- 8. SCREEN: BROADCAST IN-PROGRESS -->
-        <!-- ========================================== -->
-        <div class="screen p-5 pb-20 justify-center items-center text-center" id="screen-broadcasting">
-            <div class="w-full max-w-sm my-auto">
-                <!-- Pulsing Radar Animation Container -->
-                <div class="relative w-48 h-48 mx-auto mb-6 flex items-center justify-center">
-                    <div class="pulse-circle absolute inset-0 rounded-full border border-[#00f0b5]/30 bg-[#00f0b5]/5">
-                    </div>
-                    <div class="pulse-circle absolute inset-4 rounded-full border border-[#00f0b5]/50 bg-[#00f0b5]/10"
-                        style="animation-delay: 0.5s;"></div>
-                    <div class="pulse-circle absolute inset-8 rounded-full border border-[#00f0b5]/80 bg-[#00f0b5]/15"
-                        style="animation-delay: 1s;"></div>
-                    <!-- Core Ethereum Icon -->
-                    <div
-                        class="w-16 h-16 rounded-2xl bg-[#0b0e14] border-2 border-[#00f0b5] flex items-center justify-center text-[#00f0b5] text-2xl shadow-xl z-10 relative">
-                        <i class="fa-brands fa-ethereum animate-bounce"></i>
-                    </div>
-                    <!-- Orbiting Node Dots -->
-                    <div class="absolute top-2 left-6 w-3 h-3 rounded-full bg-[#00f0b5] shadow-md shadow-[#00f0b5]">
-                    </div>
-                    <div
-                        class="absolute bottom-4 right-8 w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-md shadow-cyan-400">
-                    </div>
-                    <div class="absolute top-10 right-4 w-3.5 h-3.5 rounded-full bg-emerald-300 shadow-md"></div>
-                </div>
-                <div
-                    class="text-[11px] font-mono text-[#00f0b5] uppercase tracking-widest mb-1 flex items-center justify-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-[#00f0b5] animate-ping"></span> RPC PROPAGATING (STAGE 2/3)
-                </div>
-                <h2 class="text-xl font-bold text-white mb-2">Broadcasting to Ethereum...</h2>
-                <p class="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed mb-6">
-                    Submitting verified signed payload to decentralized mempool nodes. Please do not close the app or
-                    navigate away.
-                </p>
-                <!-- Telemetry Box -->
-                <div class="bg-[#151922] border border-[#222838] rounded-xl p-3.5 mb-6 text-left space-y-2">
-                    <div class="flex items-center justify-between text-xs font-mono">
-                        <span class="text-slate-400">PROPAGATION CONSENSUS</span>
-                        <span class="text-[#00f0b5] font-bold" id="propagation-percentage">68%</span>
-                    </div>
-                    <div class="w-full bg-[#1b202c] h-1.5 rounded-full overflow-hidden">
-                        <div class="bg-[#00f0b5] h-full rounded-full transition-all duration-300" id="propagation-bar"
-                            style="width: 68%;"></div>
-                    </div>
-                    <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 pt-1">
-                        <span>PEER NODES: 12/12</span>
-                        <span>GAS: 14.2 GWEI</span>
-                    </div>
-                </div>
-                <!-- Disabled State Indicator -->
-                <div
-                    class="flex items-center justify-center gap-2 text-xs font-mono text-slate-400 bg-[#141822] py-2 px-4 rounded-lg border border-[#1f2533]">
-                    <i class="fa-solid fa-lock text-[#00f0b5]"></i> Idempotent Lock Active (No double-spend)
-                </div>
-            </div>
-        </div>
-        <!-- ========================================== -->
-        <!-- 9. SCREEN: BROADCAST SUCCESS -->
-        <!-- ========================================== -->
-        <div class="screen p-5 pb-20 justify-center items-center text-center" id="screen-success">
-            <div class="w-full max-w-sm my-auto">
-                <!-- Success Badge -->
-                <div
-                    class="w-20 h-20 rounded-full bg-[#00f0b5]/15 border-2 border-[#00f0b5] flex items-center justify-center text-[#00f0b5] text-3xl mx-auto mb-4 cyber-glow">
-                    <i class="fa-solid fa-check"></i>
-                </div>
-                <div
-                    class="text-[11px] font-mono text-[#00f0b5] uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
-                    <i class="fa-solid fa-circle-check"></i> PROPAGATED TO MEMPOOL
-                </div>
-                <h2 class="text-2xl font-bold text-white mb-2">Transaction Broadcast!</h2>
-                <p class="text-xs text-slate-400 max-w-xs mx-auto mb-5 leading-relaxed">
-                    Your signed transfer of <strong class="text-white">2.5000 ETH</strong> has been accepted by network
-                    validators and is awaiting block inclusion.
-                </p>
-                <!-- TXID Hash Container -->
-                <div class="bg-[#151922] border border-[#222838] rounded-xl p-3.5 mb-4 text-left">
-                    <div
-                        class="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
-                        <span>TRANSACTION HASH (TXID)</span>
-                        <span class="text-[#00f0b5] text-[10px]">MEMPOOL VERIFIED</span>
-                    </div>
-                    <div
-                        class="font-mono text-xs text-slate-200 break-all bg-[#0d1017] p-2.5 rounded-lg border border-[#1f2533] select-all mb-2.5">
-                        0x8fa3729e1c4b82d3f9e0a12b456789cdef0123456789abcdef0123456789abc
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button
-                            class="flex-1 py-1.5 rounded bg-[#1c2230] text-xs font-semibold text-slate-300 hover:text-white flex items-center justify-center gap-1.5"
-                            onclick="copyText('0x8fa3729e1c4b82d3f9e0a12b456789cdef0123456789abcdef0123456789abc', 'TXID copied!')">
-                            <i class="fa-regular fa-copy"></i> Copy Hash
-                        </button>
-                        <button
-                            class="flex-1 py-1.5 rounded bg-[#1c2230] text-xs font-semibold text-[#00f0b5] hover:underline flex items-center justify-center gap-1.5"
-                            onclick="showToast('Opening block explorer...')">
-                            <i class="fa-solid fa-arrow-up-right-from-square"></i> View on Explorer
-                        </button>
-                    </div>
-                </div>
-                <!-- Execution Details Summary -->
-                <div class="bg-[#151922] border border-[#222838] rounded-xl p-3.5 mb-6 text-left space-y-2 text-xs">
-                    <div class="flex items-center justify-between">
-                        <span class="text-slate-400">Settlement Progress</span>
-                        <span class="font-mono text-[#00f0b5] font-bold">1 / 12 Confirmations</span>
-                    </div>
-                    <div class="w-full bg-[#1b202c] h-1.5 rounded-full overflow-hidden">
-                        <div class="bg-[#00f0b5] h-full w-1/12 rounded-full"></div>
-                    </div>
-                    <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-                        <span>Recipient</span>
-                        <span class="font-mono text-slate-300">0x388C...6631</span>
-                    </div>
-                    <div class="flex items-center justify-between text-[11px] text-slate-400">
-                        <span>Network Fee Paid</span>
-                        <span class="font-mono text-slate-300">0.0018 ETH ($6.03)</span>
-                    </div>
-                </div>
-                <!-- Auto Return Countdown Bar & Manual Button -->
-                <div class="flex items-center justify-between text-xs text-slate-400 mb-3 px-1">
-                    <span class="font-mono" id="return-countdown-label"><i class="fa-regular fa-clock"></i> Returning
-                        home in 5s...</span>
-                    <button class="text-[11px] text-slate-400 hover:text-white font-mono underline" id="pause-timer-btn"
-                        onclick="pauseAutoReturn()">
-                        PAUSE TIMER
-                    </button>
-                </div>
-                <button
-                    class="w-full py-3.5 rounded-xl bg-[#00f0b5] hover:bg-[#1affc4] text-[#0b0e14] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition shadow-xl shadow-[#00f0b5]/25"
-                    onclick="returnToHomeWithUpdate()">
-                    Return to Home Now <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </div>
-        </div>
-        <!-- ========================================== -->
-        <!-- 10. MODAL: ADD COIN & NETWORK DIALOG -->
-        <!-- ========================================== -->
-        <div class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4"
-            id="add-coin-modal">
-            <div
-                class="bg-[#151922] border-t sm:border border-[#232938] rounded-t-2xl sm:rounded-2xl w-full max-w-[430px] p-5 shadow-2xl relative animate-slide-up">
-                <!-- Modal Header -->
-                <div class="flex items-center justify-between pb-3 border-b border-[#212736] mb-4">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-lg bg-[#00f0b5]/15 text-[#00f0b5] flex items-center justify-center">
-                            <i class="fa-solid fa-plus text-sm"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-bold text-white">Add New Coin &amp; Network</h3>
-                            <p class="text-[10px] text-slate-400 font-mono">AIR-GAP WATCHLIST INGESTION</p>
-                        </div>
-                    </div>
-                    <button
-                        class="w-7 h-7 rounded-lg bg-[#1c2230] text-slate-400 hover:text-white flex items-center justify-center text-xs"
-                        onclick="closeAddCoinModal()">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-                <!-- Select Coin Dropdown -->
-                <div class="mb-3.5">
-                    <label class="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">Target
-                        Digital Asset</label>
-                    <div class="relative">
-                        <select
-                            class="w-full bg-[#0d1017] border border-[#212736] focus:border-[#00f0b5] rounded-xl px-3.5 py-2.5 text-xs font-medium text-white appearance-none focus:outline-none"
-                            id="modal-coin-select" onchange="updateNetworkOptions()">
-                            <option value="AVAX">Avalanche (AVAX)</option>
-                            <option value="MATIC">Polygon (MATIC / POL)</option>
-                            <option value="DOT">Polkadot (DOT)</option>
-                            <option value="ATOM">Cosmos (ATOM)</option>
-                            <option value="ADA">Cardano (ADA)</option>
-                        </select>
-                        <div
-                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
-                            <i class="fa-solid fa-chevron-down text-xs"></i>
-                        </div>
-                    </div>
-                </div>
-                <!-- Select Blockchain Network Dropdown -->
-                <div class="mb-3.5">
-                    <label class="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">Settlement
-                        Ledger &amp; Layer</label>
-                    <div class="relative">
-                        <select
-                            class="w-full bg-[#0d1017] border border-[#212736] focus:border-[#00f0b5] rounded-xl px-3.5 py-2.5 text-xs font-medium text-white appearance-none focus:outline-none"
-                            id="modal-network-select">
-                            <option value="C-Chain">Avalanche C-Chain (EVM)</option>
-                            <option value="X-Chain">Avalanche X-Chain</option>
-                        </select>
-                        <div
-                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
-                            <i class="fa-solid fa-chevron-down text-xs"></i>
-                        </div>
-                    </div>
-                </div>
-                <!-- Public Wallet Address -->
-                <div class="mb-4">
-                    <label
-                        class="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-                        <span>Public Wallet Address</span>
-                        <span class="text-[#00f0b5] text-[10px]">Air-Gapped Input</span>
-                    </label>
-                    <div class="relative">
-                        <input
-                            class="w-full bg-[#0d1017] border border-[#212736] focus:border-[#00f0b5] rounded-xl px-3.5 py-2.5 text-xs font-mono text-white placeholder-slate-500 focus:outline-none"
-                            id="modal-address-input" placeholder="Enter valid public key or xpub" type="text"
-                            value="0x71C25b184F84F8b417cCc692fDe9eAC42646a4F9" />
-                        <button class="absolute right-2 top-2 p-1 text-slate-400 hover:text-[#00f0b5] text-xs"
-                            onclick="pasteToModalAddress()">
-                            <i class="fa-regular fa-paste"></i>
-                        </button>
-                    </div>
-                    <div class="text-[10px] text-[#00f0b5] font-mono mt-1 flex items-center gap-1">
-                        <i class="fa-solid fa-circle-check"></i> EIP-55 Checksum Verified
-                    </div>
-                </div>
-                <!-- Duplicate Prevention Warning -->
-                <div
-                    class="bg-[#121620] border border-[#1f2636] rounded-xl p-3 mb-5 flex items-start gap-2 text-slate-400 text-xs">
-                    <i class="fa-solid fa-circle-info text-[#00f0b5] mt-0.5 text-xs"></i>
-                    <span class="text-[11px] leading-relaxed">
-                        System automatically prevents duplicate coin-and-network combinations. Adding an existing pair
-                        will merge telemetry rather than duplicating records.
-                    </span>
-                </div>
-                <!-- Action Buttons -->
-                <div class="grid grid-cols-2 gap-3">
-                    <button
-                        class="py-3 rounded-xl bg-[#1b202c] hover:bg-[#252c3e] text-slate-300 font-semibold text-xs transition"
-                        onclick="closeAddCoinModal()">
-                        Cancel
-                    </button>
-                    <button
-                        class="py-3 rounded-xl bg-[#00f0b5] hover:bg-[#1affc4] text-[#0b0e14] font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-lg shadow-[#00f0b5]/20"
-                        onclick="submitAddCoin()">
-                        <i class="fa-solid fa-plus font-bold"></i> Add Coin to Vault
-                    </button>
-                </div>
-            </div>
-        </div>
-        <!-- Bottom Navigation Bar (Persistent Tab Chrome) -->
-        <nav
-            class="fixed bottom-0 left-0 right-0 max-w-[430px] mx-auto bg-[#10131a]/95 backdrop-blur-md border-t border-[#1f2430] py-2 px-4 flex items-center justify-around z-40">
-            <button class="flex flex-col items-center text-[#00f0b5] py-1 transition" id="tab-home"
-                onclick="navigateTo('screen-home')">
-                <i class="fa-solid fa-wallet text-sm mb-1"></i>
-                <span class="text-[10px] font-bold tracking-wider uppercase font-mono">Vault</span>
-            </button>
-            <button class="flex flex-col items-center text-slate-400 hover:text-white py-1 transition" id="tab-activity"
-                onclick="showToast('Activity ledger synced')">
-                <i class="fa-solid fa-list-check text-sm mb-1"></i>
-                <span class="text-[10px] font-medium tracking-wider uppercase font-mono">Activity</span>
-            </button>
-            <button class="flex flex-col items-center text-slate-400 hover:text-white py-1 transition" id="tab-signer"
-                onclick="navigateTo('screen-unsigned-qr')">
-                <i class="fa-solid fa-shield-halved text-sm mb-1"></i>
-                <span class="text-[10px] font-medium tracking-wider uppercase font-mono">Signer</span>
-            </button>
-            <button class="flex flex-col items-center text-slate-400 hover:text-white py-1 transition" id="tab-settings"
-                onclick="showToast('Settings &amp; Hardware Diagnostics')">
-                <i class="fa-solid fa-gear text-sm mb-1"></i>
-                <span class="text-[10px] font-medium tracking-wider uppercase font-mono">Settings</span>
-            </button>
-        </nav>
-        <!-- Persistent Global Feedback Toast -->
-        <div class="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-[#00f0b5] text-[#0b0e14] px-4 py-2 rounded-xl text-xs font-bold font-mono shadow-2xl flex items-center gap-2 transform -translate-y-20 opacity-0 transition-all duration-300 pointer-events-none"
-            id="toast">
-            <i class="fa-solid fa-circle-check"></i>
-            <span id="toast-message">Notification</span>
-        </div>
-    </div>
-    <!-- Interactive Engine JavaScript -->
-    <script>
-        let currentScreen = 'screen-home';
-        let historyStack = ['screen-home'];
-        let autoReturnInterval = null;
-        let returnSeconds = 5;
+<body>
+  <div class="app">
 
-        const screenTitles = {
-            'screen-home': 'Assets',
-            'screen-coin-detail': 'ETH Detail',
-            'screen-receive': 'Receive ETH',
-            'screen-send': 'Send ETH',
-            'screen-unsigned-qr': 'Sign Request',
-            'screen-scan-signed': 'Scan Signed QR',
-            'screen-confirm': 'Confirm Payload',
-            'screen-broadcasting': 'Mempool Pipeline',
-            'screen-success': 'Broadcast Complete'
-        };
-
-        function navigateTo(screenId, addToHistory = true) {
-            if (autoReturnInterval) {
-                clearInterval(autoReturnInterval);
-                autoReturnInterval = null;
-            }
-
-            // Hide all screens
-            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-
-            // Show target screen
-            const target = document.getElementById(screenId);
-            if (target) {
-                target.classList.add('active');
-                currentScreen = screenId;
-                if (addToHistory && (historyStack[historyStack.length - 1] !== screenId)) {
-                    historyStack.push(screenId);
-                }
-            }
-
-            // Update Header Title & Back Button State
-            const titleEl = document.getElementById('screen-title');
-            if (titleEl && screenTitles[screenId]) {
-                titleEl.textContent = screenTitles[screenId];
-            }
-
-            const backBtn = document.getElementById('global-back-btn');
-            if (backBtn) {
-                if (screenId === 'screen-home') {
-                    backBtn.classList.add('hidden');
-                } else {
-                    backBtn.classList.remove('hidden');
-                }
-            }
-
-            // Update Active Tab Styling
-            const tabHome = document.getElementById('tab-home');
-            const tabSigner = document.getElementById('tab-signer');
-            if (tabHome && tabSigner) {
-                if (screenId === 'screen-home' || screenId === 'screen-coin-detail') {
-                    tabHome.className = 'flex flex-col items-center text-[#00f0b5] py-1 transition';
-                    tabSigner.className = 'flex flex-col items-center text-slate-400 hover:text-white py-1 transition';
-                } else if (screenId === 'screen-unsigned-qr' || screenId === 'screen-scan-signed') {
-                    tabHome.className = 'flex flex-col items-center text-slate-400 hover:text-white py-1 transition';
-                    tabSigner.className = 'flex flex-col items-center text-[#00f0b5] py-1 transition';
-                } else {
-                    tabHome.className = 'flex flex-col items-center text-slate-400 hover:text-white py-1 transition';
-                    tabSigner.className = 'flex flex-col items-center text-slate-400 hover:text-white py-1 transition';
-                }
-            }
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function goBack() {
-            if (historyStack.length > 1) {
-                historyStack.pop(); // remove current
-                const prev = historyStack[historyStack.length - 1];
-                navigateTo(prev, false);
-            } else {
-                navigateTo('screen-home', false);
-            }
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toast-message');
-            toastMsg.textContent = message;
-            toast.classList.remove('-translate-y-20', 'opacity-0');
-            toast.classList.add('translate-y-0', 'opacity-100');
-            setTimeout(() => {
-                toast.classList.remove('translate-y-0', 'opacity-100');
-                toast.classList.add('-translate-y-20', 'opacity-0');
-            }, 2400);
-        }
-
-        function copyText(text, successMsg) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast(successMsg || 'Copied to clipboard!');
-            }).catch(() => {
-                showToast('Copied to clipboard!');
-            });
-        }
-
-        // Add Coin Modal Logic
-        function openAddCoinModal() {
-            document.getElementById('add-coin-modal').classList.remove('hidden');
-        }
-
-        function closeAddCoinModal() {
-            document.getElementById('add-coin-modal').classList.add('hidden');
-        }
-
-        function updateNetworkOptions() {
-            const coin = document.getElementById('modal-coin-select').value;
-            const netSelect = document.getElementById('modal-network-select');
-            netSelect.innerHTML = '';
-
-            const optionsMap = {
-                'AVAX': ['Avalanche C-Chain (EVM)', 'Avalanche X-Chain'],
-                'MATIC': ['Polygon PoS', 'Polygon zkEVM'],
-                'DOT': ['Polkadot Relay Chain', 'Moonbeam Parachain'],
-                'ATOM': ['Cosmos Hub (Hub-4)', 'Osmosis AMM'],
-                'ADA': ['Cardano Mainnet (Shelley)']
-            };
-
-            (optionsMap[coin] || ['Mainnet']).forEach(net => {
-                const opt = document.createElement('option');
-                opt.value = net;
-                opt.textContent = net;
-                netSelect.appendChild(opt);
-            });
-        }
-
-        function submitAddCoin() {
-            const coin = document.getElementById('modal-coin-select').value;
-            const net = document.getElementById('modal-network-select').value;
-            closeAddCoinModal();
-            showToast(`Added ${coin} (${net}) to Vault!`);
-
-            // Dynamically insert coin into home list
-            const container = document.getElementById('coins-container');
-            const newCard = document.createElement('div');
-            newCard.className = 'p-3.5 rounded-xl bg-[#151922] border border-[#222838] hover:border-[#00f0b5]/40 transition cursor-pointer flex items-center justify-between animate-fadeIn';
-            newCard.onclick = () => showToast(`Selected ${coin}`);
-            newCard.innerHTML = `
-    <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 rounded-xl bg-[#00f0b5]/15 border border-[#00f0b5]/30 flex items-center justify-center text-[#00f0b5] font-bold text-xs">
-        ${coin.substring(0, 3)}
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-icon">◆</span>
+        <span>vault<span style="color:var(--accent)">.</span></span>
       </div>
-      <div>
-        <div class="flex items-center gap-1.5">
-          <span class="font-bold text-sm text-white">${coin}</span>
-          <span class="text-[10px] bg-[#1e2330] text-slate-300 px-1.5 py-0.2 rounded font-mono">NEW</span>
+      <button class="icon-btn" onclick="openAddCoin()" aria-label="Add coin">+</button>
+    </header>
+
+    <!-- HOME -->
+    <section id="home" class="page active">
+      <p class="muted">YOUR PORTFOLIO</p>
+      <h1>My Wallet</h1>
+      <p class="muted small">Manage your digital assets</p>
+
+      <div class="total-card">
+        <div class="total-label">Total token balance</div>
+        <div class="total-value" id="totalCoins">3 assets</div>
+        <div class="total-sub">Balances are displayed per token</div>
+      </div>
+
+      <div class="section-title">
+        <h2>Your assets</h2>
+        <span class="muted small" id="assetCount">3 assets</span>
+      </div>
+      <div id="coinList" class="coin-list"></div>
+    </section>
+
+    <!-- COIN DETAILS -->
+    <section id="details" class="page">
+      <button class="back" onclick="goHome()">← Wallet</button>
+      <div id="coinDetails"></div>
+    </section>
+
+    <!-- SEND -->
+    <section id="send" class="page">
+      <button class="back" onclick="showPage('details')">← Back</button>
+      <h1>Send <span id="sendSymbol"></span></h1>
+      <p class="muted">Prepare a transaction for offline signing.</p>
+
+      <div class="field">
+        <label for="recipient">Recipient address</label>
+        <input id="recipient" placeholder="Enter recipient address" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div class="field">
+        <label for="amount">Amount</label>
+        <input id="amount" type="number" min="0" step="any" placeholder="0.00" inputmode="decimal">
+      </div>
+
+      <div class="fee-box">
+        <div class="summary-row">
+          <span>Network</span><span id="sendChain"></span>
         </div>
-        <div class="text-[11px] text-slate-400 font-mono flex items-center gap-1 mt-0.5">
-          <span class="w-1.5 h-1.5 rounded-full bg-[#00f0b5]"></span> ${net} • 0x71C...a4F9
+        <div class="summary-row">
+          <span>Estimated fee</span><span id="feeText"></span>
+        </div>
+        <div class="summary-row">
+          <span>Available balance</span><span id="available"></span>
         </div>
       </div>
+
+      <p class="muted small">
+        Fees shown here are illustrative estimates, not live network quotes.
+      </p>
+
+      <button class="btn" onclick="generateTransaction()">
+        Generate Transaction
+      </button>
+    </section>
+
+    <!-- UNSIGNED QR -->
+    <section id="unsigned" class="page">
+      <button class="back" onclick="showPage('send')">← Back</button>
+      <h1>Sign transaction</h1>
+      <p class="muted">
+        Scan this QR using your offline signing device. Return the signed
+        transaction as a QR code.
+      </p>
+
+      <div class="qr-card">
+        <h3>Unsigned transaction</h3>
+        <div id="unsignedQR" class="qr-code"></div>
+        <p>Transaction data only — not signed</p>
+      </div>
+
+      <div class="notice">
+        Never enter or scan a seed phrase or private key into this app.
+        Verify transaction details on your signing device.
+      </div>
+
+      <button class="btn" onclick="openScanner()">
+        Scan Signed Transaction
+      </button>
+
+      <button class="btn" onclick="pasteFromClipboard()">
+        Read Clipboard
+      </button>
+      <button class="btn secondary" onclick="showPage('details')">
+        Cancel
+      </button>
+    </section>
+
+    <!-- RECEIVE -->
+    <section id="receive" class="page">
+      <button class="back" onclick="showPage('details')">← Back</button>
+      <h1>Receive <span id="receiveSymbol"></span></h1>
+      <p class="muted">Share your receiving address.</p>
+      <div class="qr-card">
+        <h3>Receiving address</h3>
+        <div id="receiveQR" class="qr-code"></div>
+        <p id="receiveAddress" style="overflow-wrap:anywhere"></p>
+      </div>
+      <button class="btn" onclick="copyAddress()">Copy Address</button>
+    </section>
+
+    <!-- CONFIRMATION -->
+    <section id="confirm" class="page">
+      <button class="back" onclick="showPage('unsigned')">← Back</button>
+      <h1>Review transaction</h1>
+      <p class="muted">Check all details before proceeding.</p>
+      <div id="confirmationSummary" class="summary"></div>
+
+      <div class="notice">
+        Only proceed after verifying the signed transaction independently.
+        This demo does not cryptographically verify the signature.
+      </div>
+
+      <button class="btn" onclick="broadcastTransaction()">Broadcast</button>
+      <button class="btn secondary" onclick="showPage('unsigned')">
+        Cancel
+      </button>
+    </section>
+
+    <!-- RESULT -->
+    <section id="result" class="page center">
+      <div id="resultIcon" class="status-icon">✓</div>
+      <h1 id="resultTitle">Transaction complete</h1>
+      <p id="resultMessage" class="muted"></p>
+      <p class="muted small">Returning to wallet in 5 seconds...</p>
+      <button class="btn secondary" onclick="goHome()">Return Home</button>
+    </section>
+
+  </div>
+
+  <!-- ADD COIN MODAL -->
+  <div id="addModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+    <div class="modal-content">
+      <div class="modal-head">
+        <h2 id="addTitle">Add an asset</h2>
+        <button class="icon-btn" onclick="closeAddCoin()" aria-label="Close">×</button>
+      </div>
+
+      <div class="field">
+        <label for="newCoin">Coin / Token</label>
+        <input id="newCoin" placeholder="e.g. Bitcoin" required>
+      </div>
+
+      <div class="field">
+        <label for="newSymbol">Symbol</label>
+        <input id="newSymbol" placeholder="e.g. BTC" required>
+      </div>
+
+      <div class="field">
+        <label for="newChain">Chain</label>
+        <select id="newChain">
+          <option value="Bitcoin">Bitcoin</option>
+          <option value="Ethereum">Ethereum</option>
+          <option value="Polygon">Polygon</option>
+          <option value="BNB Smart Chain">BNB Smart Chain</option>
+          <option value="Solana">Solana</option>
+          <option value="Arbitrum">Arbitrum</option>
+          <option value="Base">Base</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="newAddress">Wallet address</label>
+        <input id="newAddress" placeholder="Public address only" autocomplete="off" spellcheck="false">
+      </div>
+
+      <button class="btn" onclick="addCoin()">Add Asset</button>
     </div>
-    <div class="text-right">
-      <div class="font-bold font-mono text-sm text-white">0.0000 ${coin}</div>
-      <div class="text-xs text-slate-400 font-mono">$0.00 USD</div>
+  </div>
+
+  <!-- SCANNER MODAL -->
+  <div id="scanModal" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <div class="modal-head">
+        <h2>Scan signed QR</h2>
+        <button class="icon-btn" onclick="closeScanner()" aria-label="Close">×</button>
+      </div>
+      <p class="muted small">
+        Scan the signed transaction QR from your offline device.
+      </p>
+      <div id="reader"></div>
+      <p id="scanError" class="small" style="color:var(--danger)"></p>
+    </div>
+  </div>
+
+  <script>
+    const COINS = [
+      {
+        name: "USD Thether", symbol: "USDT", chain: "BSC",
+        balance: 1000, address: "0x128F6b202C0557b74A8A7CD0fe5Ba7FEF6c1D690",
+        fee: 0.00002, icon: "$"
+      }
+    ];
+
+    let selectedCoin = null;
+    let pendingTransaction = null;
+    let signedTransaction = null;
+    let scanner = null;
+    let scannerRunning = false;
+    let resultTimer = null;
+
+    const $ = id => document.getElementById(id);
+
+    function showPage(id) {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      $(id).classList.add("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function goHome() {
+      clearTimeout(resultTimer);
+      closeScanner();
+      closeAddCoin();
+      showPage("home");
+      renderCoins();
+    }
+
+    function formatBalance(value) {
+      return Number(value).toLocaleString("en-US", {
+        maximumFractionDigits: 8
+      });
+    }
+
+    function renderCoins() {
+      $("coinList").innerHTML = "";
+      $("assetCount").textContent = `${COINS.length} assets`;
+      $("totalCoins").textContent = `${COINS.length} assets`;
+
+      if (!COINS.length) {
+        $("coinList").innerHTML =
+          '<div class="empty">No assets yet. Tap + to add a coin.</div>';
+        return;
+      }
+
+      COINS.forEach((coin, index) => {
+        const item = document.createElement("div");
+        item.className = "coin";
+
+        const icon = document.createElement("div");
+        icon.className = "coin-icon";
+        icon.textContent = coin.icon || coin.symbol.slice(0, 2);
+
+        const info = document.createElement("div");
+        info.className = "coin-info";
+
+        const name = document.createElement("div");
+        name.className = "coin-name";
+        name.textContent = coin.name;
+
+        const chain = document.createElement("div");
+        chain.className = "coin-chain";
+        chain.textContent = coin.chain;
+
+        info.append(name, chain);
+
+        const balance = document.createElement("div");
+        balance.className = "coin-balance";
+
+        const amount = document.createElement("div");
+        amount.textContent = formatBalance(coin.balance);
+
+        const symbol = document.createElement("div");
+        symbol.className = "coin-symbol";
+        symbol.textContent = coin.symbol;
+
+        balance.append(amount, symbol);
+        item.append(icon, info, balance);
+        item.addEventListener("click", () => openCoin(index));
+        $("coinList").appendChild(item);
+      });
+    }
+
+    function openCoin(index) {
+      selectedCoin = COINS[index];
+      if (!selectedCoin) return;
+
+      $("coinDetails").innerHTML = `
+    <div class="center">
+      <div class="status-icon">${escapeHTML(selectedCoin.icon || "◆")}</div>
+      <h1>${escapeHTML(selectedCoin.name)}</h1>
+      <p class="muted">${escapeHTML(selectedCoin.chain)}</p>
+      <div class="total-value">${formatBalance(selectedCoin.balance)}</div>
+      <p class="muted">${escapeHTML(selectedCoin.symbol)}</p>
+    </div>
+    <div class="summary">
+      <div class="summary-row">
+        <span>Chain</span><span>${escapeHTML(selectedCoin.chain)}</span>
+      </div>
+      <div class="summary-row">
+        <span>Address</span>
+        <span>${escapeHTML(shortAddress(selectedCoin.address))}</span>
+      </div>
     </div>
   `;
-            container.prepend(newCard);
+
+      showPage("details");
+
+      // Buttons are created separately to avoid inserting user input into HTML.
+      const actions = document.createElement("div");
+      actions.className = "btn-row";
+
+      const send = document.createElement("button");
+      send.className = "btn";
+      send.textContent = "↑ Send";
+      send.onclick = openSend;
+
+      const receive = document.createElement("button");
+      receive.className = "btn secondary";
+      receive.textContent = "↓ Receive";
+      receive.onclick = openReceive;
+
+      actions.append(send, receive);
+      $("coinDetails").appendChild(actions);
+    }
+
+    function shortAddress(address) {
+      if (!address) return "No address added";
+      if (address.length < 18) return address;
+      return address.slice(0, 9) + "..." + address.slice(-7);
+    }
+
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, c => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;",
+        '"': "&quot;", "'": "&#39;"
+      })[c]);
+    }
+
+    function openAddCoin() {
+      $("addModal").classList.add("open");
+      $("newCoin").focus();
+    }
+
+    function closeAddCoin() {
+      $("addModal").classList.remove("open");
+    }
+
+    function addCoin() {
+      const name = $("newCoin").value.trim();
+      const symbol = $("newSymbol").value.trim().toUpperCase();
+      const chain = $("newChain").value;
+      const address = $("newAddress").value.trim();
+
+      if (!name || !symbol || !address) {
+        alert("Please enter the coin name, symbol and public address.");
+        return;
+      }
+
+      if (COINS.some(c => c.symbol === symbol && c.chain === chain)) {
+        alert("This token and chain combination already exists.");
+        return;
+      }
+
+      COINS.push({
+        name, symbol, chain, address,
+        balance: 0, fee: 0.001, icon: symbol.slice(0, 2)
+      });
+
+      $("newCoin").value = "";
+      $("newSymbol").value = "";
+      $("newAddress").value = "";
+
+      closeAddCoin();
+      renderCoins();
+    }
+
+    function openSend() {
+      $("sendSymbol").textContent = selectedCoin.symbol;
+      $("sendChain").textContent = selectedCoin.chain;
+      $("feeText").textContent =
+        `${formatBalance(selectedCoin.fee)} ${selectedCoin.symbol}`;
+      $("available").textContent =
+        `${formatBalance(selectedCoin.balance)} ${selectedCoin.symbol}`;
+
+      $("recipient").value = "";
+      $("amount").value = "";
+      showPage("send");
+    }
+
+    async function generateTransaction() {
+
+      const sender = "0x128F6b202C0557b74A8A7CD0fe5Ba7FEF6c1D690";
+      const receiver = $("recipient").value.trim();
+      const amount = Number($("amount").value);
+      const tokenContract = "0x55d398326f99059fF775485246999027B3197955";
+      // const fee = selectedCoin.fee;
+
+      if (!receiver) {
+        alert("Enter a receiver address.");
+        return;
+      }
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        alert("Enter a valid amount greater than zero.");
+        return;
+      }
+
+      // if (amount + fee > selectedCoin.balance) {
+      //   alert("Insufficient balance, including the estimated fee.");
+      //   return;
+      // }
+
+      const RPC = "https://bsc-dataseed.bnbchain.org";
+
+      // Validate addresses
+      const isAddress = (a) =>
+        /^0x[0-9a-fA-F]{40}$/.test(a);
+
+      for (const [name, address] of Object.entries({
+        sender,
+        receiver,
+        tokenContract
+      })) {
+        if (!isAddress(address)) {
+          throw new Error(`Invalid ${name} address`);
+        }
+      }
+
+      // Avoid floating-point rounding of token amounts
+      const amountString = String(amount);
+
+      if (!/^\d+(\.\d+)?$/.test(amountString) ||
+        Number(amountString) <= 0) {
+        throw new Error("Amount must be a positive number");
+      }
+
+      // Send JSON-RPC request
+      async function rpc(method, params = []) {
+        const response = await fetch(RPC, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: 1,
+            method,
+            params
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`RPC HTTP error: ${response.status}`);
         }
 
-        // Send Screen Calculators
-        function setSendAmount(val) {
-            const input = document.getElementById('send-amount-input');
-            input.value = val.toFixed(4);
-            calculateTotal();
+        const result = await response.json();
+
+        if (result.error) {
+          throw new Error(result.error.message);
         }
 
-        function calculateTotal() {
-            const amtInput = parseFloat(document.getElementById('send-amount-input').value) || 0;
-            const gas = 0.0018;
-            const total = amtInput + gas;
-            const fiatRate = 3350;
+        return result.result;
+      }
 
-            document.getElementById('send-amount-fiat').textContent = `≈ $${(amtInput * fiatRate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
-            document.getElementById('total-deduction-display').textContent = `${total.toFixed(4)} ETH`;
-            document.getElementById('total-deduction-fiat').textContent = `≈ $${(total * fiatRate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
+      // Read token decimals()
+      const decimalsHex = await rpc("eth_call", [
+        {
+          to: tokenContract,
+          data: "0x313ce567"
+        },
+        "latest"
+      ]);
+
+      const decimals = Number(BigInt(decimalsHex));
+
+      if (decimals < 0 || decimals > 255) {
+        throw new Error("Invalid token decimals");
+      }
+
+      // Convert amount to exact integer token units
+      const [whole, fraction = ""] = amountString.split(".");
+
+      if (fraction.length > decimals) {
+        throw new Error(
+          `Token supports at most ${decimals} decimal places`
+        );
+      }
+
+      const tokenAmount = BigInt(whole) *
+        (10n ** BigInt(decimals)) +
+        BigInt(
+          (fraction + "0".repeat(decimals)).slice(0, decimals) || "0"
+        );
+
+      if (tokenAmount <= 0n) {
+        throw new Error("Amount is too small for this token");
+      }
+
+      // Encode transfer(address,uint256)
+      const paddedReceiver =
+        receiver.slice(2).toLowerCase().padStart(64, "0");
+
+      const paddedAmount =
+        tokenAmount.toString(16).padStart(64, "0");
+
+      const data =
+        "0xa9059cbb" + paddedReceiver + paddedAmount;
+
+      // Fetch nonce, chain ID and gas price
+      const [nonce, chainId, gasPrice] = await Promise.all([
+        rpc("eth_getTransactionCount", [sender, "pending"]),
+        rpc("eth_chainId", []),
+        rpc("eth_gasPrice", [])
+      ]);
+
+      if (BigInt(chainId) !== 56n) {
+        throw new Error("RPC is not connected to BSC mainnet");
+      }
+
+      // Estimate gas for the actual token transfer
+      const estimatedGas = await rpc("eth_estimateGas", [{
+        from: sender,
+        to: tokenContract,
+        value: "0x0",
+        data
+      }]);
+
+      // Add a 20% safety margin
+      const gasLimit =
+        (BigInt(estimatedGas) * 120n + 99n) / 100n;
+
+      // Construct unsigned transaction
+      const transaction = {
+        from: sender,
+        to: tokenContract,
+        value: "0x0",
+        data,
+        nonce,
+        chainId,
+        gas: "0x" + gasLimit.toString(16),
+        gasPrice
+      };
+
+
+      $("unsignedQR").innerHTML = "";
+
+      new QRCode($("unsignedQR"), {
+        text: JSON.stringify(transaction),
+        width: 220,
+        height: 220,
+        correctLevel: QRCode.CorrectLevel.M
+      });
+
+      showPage("unsigned");
+    }
+
+    function openReceive() {
+      $("receiveSymbol").textContent = selectedCoin.symbol;
+      $("receiveAddress").textContent = selectedCoin.address;
+      $("receiveQR").innerHTML = "";
+
+      new QRCode($("receiveQR"), {
+        text: selectedCoin.address,
+        width: 220,
+        height: 220,
+        correctLevel: QRCode.CorrectLevel.M
+      });
+
+      showPage("receive");
+    }
+
+    async function copyAddress() {
+      try {
+        await navigator.clipboard.writeText(selectedCoin.address);
+        alert("Address copied.");
+      } catch {
+        alert("Clipboard access unavailable. Copy the address manually.");
+      }
+    }
+
+    async function pasteFromClipboard() {
+      try {
+        const clipboard =
+          await navigator.clipboard.readText();
+
+        // Basic consistency checks only. These do not
+        // establish that a transaction is genuinely signed.
+        if (
+          !clipboard
+
+          // data.version !== 1 ||
+          // data.signed !== true ||
+          // !pendingTransaction ||
+          // data.chain !== pendingTransaction.chain ||
+          // data.symbol !== pendingTransaction.symbol ||
+          // data.to !== pendingTransaction.to ||
+          // data.from !== pendingTransaction.from ||
+          // data.amount !== pendingTransaction.amount ||
+          // data.fee !== pendingTransaction.fee ||
+          // typeof data.rawTransaction !== "string" ||
+          // !data.rawTransaction.trim()
+        ) {
+          throw new Error(
+            "Invalid QR or transaction details do not match."
+          );
         }
 
-        function triggerGenerateTransaction() {
-            const amt = parseFloat(document.getElementById('send-amount-input').value) || 0;
-            if (amt <= 0) {
-                showToast('Please enter an amount > 0');
-                return;
+        signedTransaction = base64ToHex(clipboard);
+        // await closeScanner();
+        renderConfirmation();
+
+        showPage("confirm");
+
+      } catch (error) {
+        console.log(error);
+
+        throw new Error(
+          "Error pasteFromClipboard"
+        );
+      }
+    }
+
+    // Base64 -> HEX transaction
+    function base64ToHex(base64) {
+      const binary = atob(base64);
+
+      const hex = Array.from(binary, char =>
+        char.charCodeAt(0).toString(16).padStart(2, "0")
+      ).join("");
+
+      return "0x" + hex;
+    }
+
+    async function openScanner() {
+      $("scanError").textContent = "";
+      $("scanModal").classList.add("open");
+
+      try {
+        if (typeof Html5Qrcode === "undefined") {
+          throw new Error("QR scanner library failed to load.");
+        }
+
+        scanner = new Html5Qrcode("reader");
+        scannerRunning = true;
+
+        await scanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 240, height: 240 } },
+          async decodedText => {
+            if (!scannerRunning) return;
+
+            try {
+
+              // Basic consistency checks only. These do not
+              // establish that a transaction is genuinely signed.
+              if (
+                !decodedText
+                // data.version !== 1 ||
+                // data.signed !== true ||
+                // !pendingTransaction ||
+                // data.chain !== pendingTransaction.chain ||
+                // data.symbol !== pendingTransaction.symbol ||
+                // data.to !== pendingTransaction.to ||
+                // data.from !== pendingTransaction.from ||
+                // data.amount !== pendingTransaction.amount ||
+                // data.fee !== pendingTransaction.fee ||
+                // typeof data.rawTransaction !== "string" ||
+                // !data.rawTransaction.trim()
+              ) {
+                throw new Error(
+                  "Invalid QR or transaction details do not match."
+                );
+              }
+
+              signedTransaction = base64ToHex(decodedText);
+              await closeScanner();
+              renderConfirmation();
+              showPage("confirm");
+            } catch (error) {
+              $("scanError").textContent =
+                error.message || "Unable to read signed transaction.";
             }
-            showToast('Cryptographic payload compiled!');
-            setTimeout(() => {
-                navigateTo('screen-unsigned-qr');
-            }, 400);
+          },
+          () => { }
+        );
+      } catch (error) {
+        scannerRunning = false;
+        $("scanError").textContent =
+          "Camera unavailable. Allow camera access and use HTTPS or localhost. " +
+          (error.message || "");
+      }
+    }
+
+    async function closeScanner() {
+      scannerRunning = false;
+
+      if (scanner) {
+        try {
+          if (scanner.isScanning) await scanner.stop();
+        } catch (_) { }
+
+        try {
+          await scanner.clear();
+        } catch (_) { }
+
+        scanner = null;
+      }
+
+      $("scanModal").classList.remove("open");
+    }
+
+    function renderConfirmation() {
+      const t = {};
+
+      const rows = [
+        ["Token", `${t.coin} (${t.symbol})`],
+        ["Chain", t.chain],
+        ["Recipient", t.to],
+        ["Amount", `${formatBalance(t.amount)} ${t.symbol}`],
+        ["Estimated fee", `${formatBalance(t.fee)} ${t.symbol}`],
+        ["Total debit", `${formatBalance(t.amount + t.fee)} ${t.symbol}`]
+      ];
+
+      $("confirmationSummary").innerHTML = "";
+
+      rows.forEach(([label, value]) => {
+        const row = document.createElement("div");
+        row.className = "summary-row";
+
+        const left = document.createElement("span");
+        left.textContent = label;
+
+        const right = document.createElement("span");
+        right.textContent = value;
+
+        row.append(left, right);
+        $("confirmationSummary").appendChild(row);
+      });
+    }
+
+    async function broadcastSignedTx(signedTx) {
+      if (!signedTx || !signedTx.startsWith("0x")) {
+        throw new Error("Invalid signed transaction");
+      }
+
+      // Replace with your own BSC mainnet RPC endpoint.
+      const RPC_URL = "https://bsc-dataseed.bnbchain.org";
+
+      const provider = new ethers.JsonRpcProvider(RPC_URL, {
+        name: "bnb",
+        chainId: 56
+      });
+
+      try {
+        // Ensure the endpoint is connected to BSC mainnet.
+        const network = await provider.getNetwork();
+
+        if (network.chainId !== 56n) {
+          throw new Error("RPC endpoint is not BSC mainnet");
         }
 
-        function pasteToRecipient() {
-            document.getElementById('send-recipient-input').value = '0x388C818CA8B9251b393131C08a73683f2a58';
-            showToast('Recipient address pasted!');
-        }
+        // Broadcast the signed transaction.
+        const response = await provider.broadcastTransaction(signedTx);
 
-        function pasteToModalAddress() {
-            document.getElementById('modal-address-input').value = '0x71C25b184F84F8b417cCc692fDe9eAC42646a4F9';
-            showToast('Address pasted!');
-        }
+        return {
+          success: true,
+          txHash: response.hash,
+          explorerUrl: `https://bscscan.com/tx/${response.hash}`
+        };
+      } finally {
+        provider.destroy();
+      }
+    }
 
-        // Optical Viewfinder Simulation
-        function simulateScanSuccess() {
-            showToast('Signed QR Payload Ingested!');
-            setTimeout(() => {
-                navigateTo('screen-confirm');
-            }, 500);
-        }
+    async function broadcastTransaction() {
+      const button = document.querySelector("#confirm .btn");
+      button.disabled = true;
+      button.innerHTML = '<span class="spinner"></span>Broadcasting...';
 
-        // Broadcast Simulation
-        function startBroadcastProcess() {
-            navigateTo('screen-broadcasting');
-            let pct = 30;
-            const bar = document.getElementById('propagation-bar');
-            const label = document.getElementById('propagation-percentage');
+      try {
+        // DEMO ONLY:
+        // Replace this block with chain-specific transaction
+        // verification and an actual blockchain RPC/API call.
+        const broadcastDetails = await broadcastSignedTx(signedTransaction);
 
-            const progInterval = setInterval(() => {
-                pct += 25;
-                if (pct > 100) pct = 100;
-                if (bar) bar.style.width = pct + '%';
-                if (label) label.textContent = pct + '%';
+        $("resultMessage").textContent = `<a href="${broadcastDetails?.explorerUrl}">Check on BSC Chain</a>`;
+      } catch (error) {
+        $("resultIcon").textContent = "!";
+        $("resultTitle").textContent = "Transaction not sent";
+        $("resultIcon").style.color = "var(--danger)";
+        $("resultMessage").textContent = error.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = "Broadcast";
+        showPage("result");
 
-                if (pct >= 100) {
-                    clearInterval(progInterval);
-                    setTimeout(() => {
-                        navigateTo('screen-success');
-                        startAutoReturnTimer();
-                    }, 600);
-                }
-            }, 450);
-        }
+        clearTimeout(resultTimer);
+        resultTimer = setTimeout(goHome, 5000);
+      }
+    }
 
-        // Auto Return Countdown on Success Screen
-        function startAutoReturnTimer() {
-            returnSeconds = 5;
-            const label = document.getElementById('return-countdown-label');
-            if (autoReturnInterval) clearInterval(autoReturnInterval);
+    $("addModal").addEventListener("click", event => {
+      if (event.target === $("addModal")) closeAddCoin();
+    });
 
-            autoReturnInterval = setInterval(() => {
-                returnSeconds--;
-                if (label) {
-                    label.innerHTML = `<i class="fa-regular fa-clock"></i> Returning home in ${returnSeconds}s...`;
-                }
-                if (returnSeconds <= 0) {
-                    clearInterval(autoReturnInterval);
-                    autoReturnInterval = null;
-                    returnToHomeWithUpdate();
-                }
-            }, 1000);
-        }
+    $("scanModal").addEventListener("click", event => {
+      if (event.target === $("scanModal")) closeScanner();
+    });
 
-        function pauseAutoReturn() {
-            if (autoReturnInterval) {
-                clearInterval(autoReturnInterval);
-                autoReturnInterval = null;
-                const label = document.getElementById('return-countdown-label');
-                if (label) label.innerHTML = `<i class="fa-solid fa-pause"></i> Auto-return paused`;
-                document.getElementById('pause-timer-btn').textContent = 'RESUME';
-                showToast('Auto return paused');
-            } else {
-                startAutoReturnTimer();
-                document.getElementById('pause-timer-btn').textContent = 'PAUSE TIMER';
-                showToast('Auto return resumed');
-            }
-        }
-
-        function returnToHomeWithUpdate() {
-            if (autoReturnInterval) {
-                clearInterval(autoReturnInterval);
-                autoReturnInterval = null;
-            }
-            showToast('Transaction settled! Balance updated.');
-            // Deduct 2.5018 ETH from balance for fidelity
-            const totalBal = document.getElementById('home-total-balance');
-            if (totalBal) {
-                totalBal.innerHTML = `$55,904.37 <span class="text-xs text-slate-400 font-sans font-normal">USD</span>`;
-            }
-            navigateTo('screen-home');
-        }
-    </script>
+    renderCoins();
+  </script>
 </body>
 
 </html>
